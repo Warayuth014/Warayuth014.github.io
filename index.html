@@ -3,27 +3,70 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>BEM Example</title>
-  <link rel="stylesheet" href="styles.css">
+  <title>OOCSS Example</title>
+  <style>
+    /* Structure */
+    .btn {
+    display: inline-block;
+    padding: 5px 15px;
+    border: none;
+    font-size: 16px;
+    text-align: center;
+    cursor: pointer;
+    }
+
+    .btn--large {
+    padding: 10px 20px;
+    font-size: 20px;
+    }
+    .btn--small{
+    padding: 10px 20px;
+    font-size: 14px;
+    }
+
+    /* Skin */
+    .btn--success{
+        background-color: green;
+        color: #fff;
+    }
+    .btn--success:hover{
+        background-color: darkgreen;
+    }
+    .btn--danger{
+        background-color: red;
+        color: #fff;
+    }
+    .btn--danger:hover{
+        background-color: darkred;
+    }
+    .btn--primary {
+    background-color: #3498db;
+    color: #fff;
+    }
+
+    .btn--primary:hover {
+    background-color: #2980b9;
+    }
+
+    .btn--secondary {
+    background-color: #f1c40f;
+    color: #333;
+    }
+
+    .btn--secondary:hover {
+    background-color: #f39c12;
+    }
+  </style>
 </head>
 <body>
-  <header class="header">
-    <div class="header__logo">MyLogo</div>
+    <!-- <div class="header">
+        .header__btn--small{
 
-    <nav class="header__nav">
-      <ul class="header__nav-list">
-        <li class="header__nav-item">
-          <a href="#" class="header__nav-link">Home</a>
-        </li>
-        <li class="header__nav-item">
-          <a href="#" class="header__nav-link">About</a>
-        </li>
-        <li class="header__nav-item">
-          <a href="#" class="header__nav-link header__nav-link--active">Services</a>
-        </li>
-      </ul>
-    </nav>
-    
-  </header>
+        } -->
+    </div>
+    <button class="btn btn--large btn--success">Success Button</button>
+    <button class="btn btn--small btn--danger">Danger Button</button>
+    <button class="btn btn--large btn--primary">Primary Button</button>
+    <button class="btn btn--small btn--secondary">Secondary Button</button>
 </body>
 </html>
