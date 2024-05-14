@@ -3,7 +3,7 @@
         body{
           font-family: "Sarabun", sans-serif;
         }
-        .bg-green{
+        .bg-black{
             background-color: hsl(0, 0%, 0%);
         }
         .bg-gray{
@@ -37,7 +37,42 @@
         .search-container button:hover {
             background: #ffffff;
           }
+          a{
+            text-decoration: none;
+            color: black;
+          }
+          a:hover{
+            text-decoration: solid underline;
+          }
         
+        /*ADD Product*/
+        .quantity {
+            display: inline-block;
+          }
+          
+          .input-text.qty {
+            width: 35px;
+            height: 35px;
+            padding: 0 5px;
+            text-align: center;
+            background-color: transparent;
+            border: 1px solid #efefef;
+          }
+          
+          .plus-btn, .minus-btn {
+            width: 35px;
+            height: 35px;
+            background-color: #f2f2f2;
+            border-radius: 0;
+            border: 1px solid #efefef;
+            display: inline-block;
+            text-align: center;
+          }
+          .plus-btn:hover, .minus-btn:hover {
+            background-color: gray;
+          }
+
+
         @media (max-width: 767px) {
           .col-3{
             flex: 100%
