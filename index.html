@@ -1,0 +1,765 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>GearUpIT</title>
+    <link rel="stylesheet" href="./css/bootstrap.min.css">
+    <script src="./js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="./style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
+</head>
+
+<body>
+    <video autoplay muted loop playsinline class="bg-video" id="bgVideo">
+        <source src="./video/203336-920723750.mp4" type="video/mp4">
+    </video>
+
+    <header id="siteHeader" class="fixed-top p-3 bg-primary bg-opacity-100">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <img src="./pic/logo/logo.webp" alt="" width="100px" class="me-4">
+
+                <!-- เมนูใหญ่ -->
+                <div class="d-none d-xl-flex align-items-center flex-grow-1">
+                    <ul class="nav me-auto align-items-center">
+                        <form class="me-3" role="search">
+                            <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
+                        </form>
+                        <li class="nav-item"><a class="nav-link text-white" href="#">สินค้า</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-solid fa-fire-flame-curved me-1"></i> ลดแรงสูงสุด 80%</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-regular fa-heart me-1"></i> รายการโปรด</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-solid fa-cart-shopping me-1"></i> ตะกร้าสินค้า</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-regular fa-user me-1"></i> เข้าสู่ระบบ</a></li>
+                    </ul>
+                </div>
+
+                <!-- ปุ่มมือถือ -->
+                <div class="ms-auto d-xl-none d-flex align-items-center">
+                    <button class="btn text-white me-2" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mobileSearch">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <button class="btn text-white" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- แบบฟอร์มค้นหา (จอเล็กเท่านั้น) -->
+            <div class="collapse d-lg-none mt-2 w-100" id="mobileSearch">
+                <form class="px-3" role="search">
+                    <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
+                </form>
+            </div>
+
+            <!-- เมนูมือถือ -->
+            <div class="collapse d-lg-none mt-2 w-100" id="mobileMenu">
+                <ul class="nav flex-column text-center">
+                    <li class="nav-item"><a class="nav-link text-white" href="#">สินค้า</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                class="fa-solid fa-fire-flame-curved me-1"></i> ลดแรง</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                class="fa-regular fa-heart me-1"></i> รายการโปรด</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                class="fa-solid fa-cart-shopping me-1"></i> ตะกร้าสินค้า</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i class="fa-regular fa-user me-1"></i>
+                            เข้าสู่ระบบ</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+
+    <div id="header-spacer"></div>
+
+    <section id="slider">
+        <div class="container px-0" style="max-width: 1920px;">
+            <div id="mySlider" class="carousel slide" data-bs-ride="carousel">
+
+                <div class="carousel-indicators">
+                    <button data-bs-target="#mySlider" data-bs-slide-to="0" class="active"></button>
+                    <button data-bs-target="#mySlider" data-bs-slide-to="1"></button>
+                    <button data-bs-target="#mySlider" data-bs-slide-to="2"></button>
+                    <button data-bs-target="#mySlider" data-bs-slide-to="3"></button>
+                    <button data-bs-target="#mySlider" data-bs-slide-to="4"></button>
+                    <button data-bs-target="#mySlider" data-bs-slide-to="5"></button>
+                </div>
+
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="pic/section1/1.webp" class="d-block w-100" alt="Slide 1">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/section1/2.webp" class="d-block w-100" alt="Slide 2">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/section1/3.webp" class="d-block w-100" alt="Slide 3">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/section1/4.webp" class="d-block w-100" alt="Slide 4">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/section1/5.webp" class="d-block w-100" alt="Slide 5">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/section1/6.webp" class="d-block w-100" alt="Slide 6">
+                    </div>
+                </div>
+
+                <button class="carousel-control-prev" data-bs-target="#mySlider" data-bs-slide="prev">
+                    <span class="carousel-control-prev-icon"></span>
+                </button>
+                <button class="carousel-control-next" data-bs-target="#mySlider" data-bs-slide="next">
+                    <span class="carousel-control-next-icon"></span>
+                </button>
+
+            </div>
+        </div>
+    </section>
+
+    <section id="slider2" class="my-1 mx-auto">
+        <div class="container px-0" style="max-width: 1920px;">
+            <div id="mySlider2" class="carousel slide" data-bs-ride="carousel">
+
+                <div class="carousel-indicators">
+                    <button data-bs-target="#mySlider2" data-bs-slide-to="0" class="active"></button>
+                    <button data-bs-target="#mySlider2" data-bs-slide-to="1"></button>
+                </div>
+
+                <div class="carousel-inner">
+                    <div class="carousel-item active">
+                        <img src="pic/section2/1.webp" class="d-block w-100" alt="Slide 1">
+                    </div>
+                    <div class="carousel-item">
+                        <img src="pic/section2/2.webp" class="d-block w-100" alt="Slide 2">
+                    </div>
+                </div>
+
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-1 mx-auto" style="max-width: 1920px;">
+        <div class="row g-1">
+            <div class="col-md-6">
+                <section id="slider2" class="mx-auto">
+                    <div class="container px-0" style="max-width: 1920px;">
+                        <div id="mySlider3" class="carousel slide" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button data-bs-target="#mySlider3" data-bs-slide-to="0" class="active"></button>
+                                <button data-bs-target="#mySlider3" data-bs-slide-to="1"></button>
+                                <button data-bs-target="#mySlider3" data-bs-slide-to="2"></button>
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="pic/section3/1.webp" class="d-block w-100" alt="Slide 1">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section3/2.webp" class="d-block w-100" alt="Slide 2">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section3/3.webp" class="d-block w-100" alt="Slide 3">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-md-6">
+                <section id="slider2" class="mx-auto">
+                    <div class="container px-0" style="max-width: 1920px;">
+                        <div id="mySlider4" class="carousel slide" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button data-bs-target="#mySlider4" data-bs-slide-to="0" class="active"></button>
+                                <button data-bs-target="#mySlider4" data-bs-slide-to="1"></button>
+                                <button data-bs-target="#mySlider4" data-bs-slide-to="2"></button>
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="pic/section3/4.webp" class="d-block w-100" alt="Slide 1">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section3/5.webp" class="d-block w-100" alt="Slide 2">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section3/6.webp" class="d-block w-100" alt="Slide 3">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-1 mx-auto" style="max-width: 1920px;">
+        <div class="row g-1">
+            <div class="col-md-6">
+                <section id="slider2" class="mx-auto">
+                    <div class="container px-0" style="max-width: 1920px;">
+                        <div id="mySlider5" class="carousel slide" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button data-bs-target="#mySlider5" data-bs-slide-to="0" class="active"></button>
+                                <button data-bs-target="#mySlider5" data-bs-slide-to="1"></button>
+                                <button data-bs-target="#mySlider5" data-bs-slide-to="2"></button>
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="pic/section4/1.webp" class="d-block w-100" alt="Slide 1">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section4/2.webp" class="d-block w-100" alt="Slide 2">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section4/3.webp" class="d-block w-100" alt="Slide 3">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-md-6">
+                <section id="slider2" class="mx-auto">
+                    <div class="container px-0" style="max-width: 1920px;">
+                        <div id="mySlider6" class="carousel slide" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button data-bs-target="#mySlider6" data-bs-slide-to="0" class="active"></button>
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="pic/section4/4.webp" class="d-block w-100" alt="Slide 1">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-1 mx-auto" style="max-width: 1920px;">
+        <div class="row g-1">
+            <div class="col-md-6">
+                <section id="slider2" class="mx-auto">
+                    <div class="container px-0" style="max-width: 1920px;">
+                        <div id="mySlider7" class="carousel slide" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button data-bs-target="#mySlider7" data-bs-slide-to="0" class="active"></button>
+                                <button data-bs-target="#mySlider7" data-bs-slide-to="1"></button>
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="pic/section5/1.jpg" class="d-block w-100" alt="Slide 1">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section5/2.webp" class="d-block w-100" alt="Slide 2">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+            <div class="col-md-6">
+                <section id="slider2" class="mx-auto">
+                    <div class="container px-0" style="max-width: 1920px;">
+                        <div id="mySlider8" class="carousel slide" data-bs-ride="carousel">
+
+                            <div class="carousel-indicators">
+                                <button data-bs-target="#mySlider8" data-bs-slide-to="0" class="active"></button>
+                                <button data-bs-target="#mySlider8" data-bs-slide-to="1"></button>
+                            </div>
+
+                            <div class="carousel-inner">
+                                <div class="carousel-item active">
+                                    <img src="pic/section5/3.webp" class="d-block w-100" alt="Slide 1">
+                                </div>
+                                <div class="carousel-item">
+                                    <img src="pic/section5/4.webp" class="d-block w-100" alt="Slide 1">
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </section>
+            </div>
+        </div>
+    </section>
+
+    <section class="mb-5">
+        <div class="p-4 bg-primary bg-opacity-25 text-white">
+            <h2 class="mb-4">Top Selling Products</h2>
+
+
+            <div id="productCarousel" class="carousel slide" data-bs-ride="carousel">
+                <div class="carousel-inner">
+
+                    <!-- Slide 1 -->
+                    <div class="carousel-item active">
+                        <div class="row justify-content-center g-0">
+                            <!-- Product 1 -->
+                            <div class="col-6 col-sm-4">
+                                <div class="card product-card h-100 p-2">
+                                    <!-- กล่องรูปสินค้า (relative) -->
+                                    <div class="position-relative">
+                                        <!-- ป้าย Best Price -->
+                                        <img src="https://img.advice.co.th/images_nas/labelproduct/LabelDesktop/Label-bestPrice_v1.png"
+                                            alt="Best Price" class="position-absolute"
+                                            style="top:5px; left:0px; width:100px; z-index:10;">
+
+                                        <!-- รูปสินค้า -->
+                                        <img src="pic/section6 top sell/ASUS ROG Phone 9 Pro Edition (24+1TB/AI2501-3B030WW) Black.webp"
+                                            class="card-img-top mb-2" alt="ASUS ROG Phone 9 Pro Edition">
+                                    </div>
+
+                                    <div class="card-body text-start">
+                                        <!-- ชื่อสินค้า -->
+                                        <p class="card-text small mb-1 fw-bold">
+                                            ASUS ROG Phone 9 Pro Edition (24+1TB/AI2501-3B030WW) Black
+                                        </p>
+
+                                        <!-- สเปคย่อ -->
+                                        <p class="spec text-muted small mb-2"
+                                            title="Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP + 32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM">
+                                            Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP +
+                                            32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM
+                                        </p>
+
+                                        <!-- ราคาปกติ -->
+                                        <p class="text-muted small mb-1 d-flex justify-content-between">
+                                            <span class="text-primary fw-bold"><del>49,990.-</del></span>
+                                            <span class="text-secondary">ประกัน 1 ปี</span>
+                                        </p>
+
+                                        <!-- ปุ่มราคาออนไลน์ -->
+                                        <button
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            style="background-color:#0096FF; border:none;">
+                                            <i class="fas fa-shopping-cart me-2"></i> 43,000.-
+                                            <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
+                                        </button>
+
+                                        <!-- ส่วนลด -->
+                                        <p class="text-danger small mb-0 text-center">ประหยัด 6,990.-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product 2 -->
+                            <div class="col-6 col-sm-4">
+                                <div class="card product-card h-100 p-2">
+                                    <div class="position-relative">
+                                        <!-- ป้าย Best Price -->
+                                        <img src="https://img.advice.co.th/images_nas/labelproduct/LabelDesktop/Label-bestPrice_v1.png"
+                                            alt="Best Price" class="position-absolute"
+                                            style="top:5px; left:0px; width:100px; z-index:10;">
+                                        <!-- รูปสินค้า -->
+                                        <img src="pic/section6 top sell/VIVO V40 5G (12+512GB) Stellar Silver/A0161747OK_BIG_1.webp"
+                                            class="card-img-top mb-2" alt="VIVO V40 5G (12+512GB) Stellar Silver">
+                                    </div>
+
+                                    <div class="card-body text-start">
+                                        <!-- ชื่อสินค้า -->
+                                        <p class="card-text small mb-1 fw-bold">
+                                            VIVO V40 5G (12+512GB) Stellar Silver
+                                        </p>
+
+                                        <!-- แถมฟรี -->
+                                        <p class="small mb-2">
+                                            <span class="badge bg-light border text-primary">
+                                                แถมฟรี: Film Focus Hydroplus Ultra Clear ... <a href="#"
+                                                    class="text-decoration-none">ดูเพิ่มเติม</a>
+                                            </span>
+                                        </p>
+
+                                        <!-- สเปคย่อ -->
+                                        <p class="spec text-muted small mb-2" data-bs-toggle="tooltip"
+                                            title="Octa-Core 2.63GHz + 2.4GHz + 1.8GHz / 12GB / 512GB / 6.78'' / F 50.0MP / B 50.0MP + 50.0MP / Android 14 / 5500mAh / 5G / 2">
+                                            Octa-Core 2.63GHz + 2.4GHz + 1.8GHz / 12GB / 512GB / 6.78'' /
+                                            F 50.0MP / B 50.0MP + 50.0MP / Android 14 / 5500mAh / 5G / 2
+                                        </p>
+
+                                        <!-- ราคาปกติ -->
+                                        <p class="text-muted small mb-1 d-flex justify-content-between">
+                                            <span class="text-primary fw-bold">15,499.-</span>
+                                            <span class="text-secondary">ประกัน 1 ปี</span>
+                                        </p>
+
+                                        <!-- ปุ่มราคาออนไลน์ -->
+                                        <button
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            style="background-color:#0096FF; border:none;">
+                                            <i class="fas fa-shopping-cart me-2"></i> 14,299.-
+                                            <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
+                                        </button>
+
+                                        <!-- ส่วนลด -->
+                                        <p class="text-danger small mb-0 text-center">ประหยัด 1,200.-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product 3 -->
+                            <div class="col-6 col-sm-4">
+                                <div class="card product-card h-100 p-2">
+                                    <div class="position-relative">
+                                        <!-- ป้าย Best Price -->
+                                        <img src="https://img.advice.co.th/images_nas/labelproduct/LabelDesktop/Label-bestPrice_v1.png"
+                                            alt="Best Price" class="position-absolute"
+                                            style="top:5px; left:0px; width:100px; z-index:10;">
+
+                                        <!-- รูปสินค้า -->
+                                        <img src="pic/section6 top sell/Notebook DELL Inspiron 5440-OIN5440220701GTH (14.0) (Ice Blue Metal Cover)/A0167950OK_BIG_2.webp"
+                                            class="card-img-top mb-2"
+                                            alt="Notebook DELL Inspiron 5440-OIN5440220701GTH (14.0) (Ice Blue Metal Cover)">
+                                    </div>
+
+                                    <div class="card-body text-start">
+                                        <!-- ชื่อสินค้า -->
+                                        <p class="card-text small mb-1 fw-bold">
+                                            Notebook DELL Inspiron 5440-OIN5440220701GTH (14.0) (Ice Blue Metal Cover)
+                                        </p>
+
+                                        <!-- แถมฟรี -->
+                                        <p class="small mb-2">
+                                            <span class="badge bg-light border text-primary">
+                                                แถมฟรี: กระเป๋า(แท้) N/B DELL CP3724 ... <a href="#"
+                                                    class="text-decoration-none">ดูเพิ่มเติม</a>
+                                            </span>
+                                        </p>
+
+                                        <!-- สเปคย่อ -->
+                                        <p class="spec text-muted small mb-2"
+                                            title="14.0 inch / Intel Core i5 120U / 16GB DDR5 / 512GB SSD / GeForce MX570A 2GB GDDR6 / Win 11">
+                                            14.0 inch / Intel Core i5 120U / 16GB DDR5 / 512GB SSD / GeForce MX570A 2GB
+                                            GDDR6 / Win 11
+                                        </p>
+
+                                        <!-- ราคาปกติ -->
+                                        <p class="text-muted small mb-1 d-flex justify-content-between">
+                                            <span class="text-primary fw-bold">30,990.-</span>
+                                            <span class="text-secondary">ประกัน 2-2-2</span>
+                                        </p>
+
+                                        <!-- ปุ่มราคาออนไลน์ -->
+                                        <button
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            style="background-color:#0096FF; border:none;">
+                                            <i class="fas fa-shopping-cart me-2"></i> 30,490.-
+                                            <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
+                                        </button>
+
+                                        <!-- ส่วนลด -->
+                                        <p class="text-danger small mb-0 text-center">ประหยัด 500.-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Product 4 -->
+                            <div class="col-6 col-sm-4">
+                                <div class="card product-card h-100 p-2">
+                                    <div class="position-relative">
+                                        <!-- ป้าย Best Price -->
+                                        <img src="https://img.advice.co.th/images_nas/labelproduct/LabelDesktop/Label-bestPrice_v1.png"
+                                            alt="Best Price" class="position-absolute"
+                                            style="top:5px; left:0px; width:100px; z-index:10;">
+
+                                        <!-- รูปสินค้า -->
+                                        <img src="pic/section6 top sell/AIO DELL 24 OEC2425C7002-OEC2425000401GTH/A0169474OK_BIG_2.jpg"
+                                            class="card-img-top mb-2" alt="AIO DELL 24 OEC2425C7002-OEC2425000401GTH">
+                                    </div>
+
+                                    <div class="card-body text-start">
+                                        <!-- ชื่อสินค้า -->
+                                        <p class="card-text small mb-1 fw-bold">
+                                            AIO DELL 24 OEC2425C7002-OEC2425000401GTH
+                                        </p>
+
+                                        <!-- สเปคย่อ -->
+                                        <p class="spec text-muted small mb-2" data-bs-toggle="tooltip"
+                                            title="Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP + 32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM">
+                                            Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP +
+                                            32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM
+                                        </p>
+
+                                        <!-- ราคาปกติ -->
+                                        <p class="text-muted small mb-1 d-flex justify-content-between">
+                                            <span class="text-primary fw-bold">39,990.-</span>
+                                            <span class="text-secondary">ประกัน 1 ปี</span>
+                                        </p>
+
+                                        <!-- ปุ่มราคาออนไลน์ -->
+                                        <button
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            style="background-color:#0096FF; border:none;">
+                                            <i class="fas fa-shopping-cart me-2"></i> 38,990.-
+                                            <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
+                                        </button>
+
+                                        <!-- ส่วนลด -->
+                                        <p class="text-danger small mb-0 text-center">ประหยัด 1,000.-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-sm-4">
+                                <div class="card product-card h-100 p-2">
+                                    <!-- รูปสินค้า -->
+                                    <img src="https://img.advice.co.th/images_nas/pic_product4/A0165858/A0165858_1.jpg"
+                                        class="card-img-top mb-2" alt="ASUS ROG Phone 9 Pro Edition">
+
+                                    <div class="card-body text-start">
+                                        <!-- ชื่อสินค้า -->
+                                        <p class="card-text small mb-1 fw-bold">
+                                            ASUS ROG Phone 9 Pro Edition (24+1TB/AI2501-3B030WW) Black
+                                        </p>
+
+                                        <!-- สเปคย่อ -->
+                                        <p class="spec text-muted small mb-2" data-bs-toggle="tooltip"
+                                            title="Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP + 32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM">
+                                            Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP +
+                                            32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM
+                                        </p>
+
+                                        <!-- ราคาปกติ -->
+                                        <p class="text-muted small mb-1 d-flex justify-content-between">
+                                            <span class="text-primary fw-bold">49,990.-</span>
+                                            <span class="text-secondary">ประกัน 1 ปี</span>
+                                        </p>
+
+                                        <!-- ปุ่มราคาออนไลน์ -->
+                                        <button
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            style="background-color:#0096FF; border:none;">
+                                            <i class="fas fa-shopping-cart me-2"></i> 43,000.-
+                                            <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
+                                        </button>
+
+                                        <!-- ส่วนลด -->
+                                        <p class="text-danger small mb-0 text-center">ประหยัด 6,990.-</p>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="col-6 col-sm-4">
+                                <div class="card product-card h-100 p-2">
+                                    <!-- รูปสินค้า -->
+                                    <img src="https://img.advice.co.th/images_nas/pic_product4/A0165858/A0165858_1.jpg"
+                                        class="card-img-top mb-2" alt="ASUS ROG Phone 9 Pro Edition">
+
+                                    <div class="card-body text-start">
+                                        <!-- ชื่อสินค้า -->
+                                        <p class="card-text small mb-1 fw-bold">
+                                            ASUS ROG Phone 9 Pro Edition (24+1TB/AI2501-3B030WW) Black
+                                        </p>
+
+                                        <!-- สเปคย่อ -->
+                                        <p class="spec text-muted small mb-2" data-bs-toggle="tooltip"
+                                            title="Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP + 32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM">
+                                            Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP +
+                                            32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM
+                                        </p>
+
+                                        <!-- ราคาปกติ -->
+                                        <p class="text-muted small mb-1 d-flex justify-content-between">
+                                            <span class="text-primary fw-bold">49,990.-</span>
+                                            <span class="text-secondary">ประกัน 1 ปี</span>
+                                        </p>
+
+                                        <!-- ปุ่มราคาออนไลน์ -->
+                                        <button
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            style="background-color:#0096FF; border:none;">
+                                            <i class="fas fa-shopping-cart me-2"></i> 43,000.-
+                                            <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
+                                        </button>
+
+                                        <!-- ส่วนลด -->
+                                        <p class="text-danger small mb-0 text-center">ประหยัด 6,990.-</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Controls -->
+                    <button class="carousel-control-prev" type="button" data-bs-target="#productCarousel"
+                        data-bs-slide="prev">
+                        <span class="carousel-control-prev-icon"></span>
+                    </button>
+                    <button class="carousel-control-next" type="button" data-bs-target="#productCarousel"
+                        data-bs-slide="next">
+                        <span class="carousel-control-next-icon"></span>
+                    </button>
+                </div>
+    </section>
+
+
+    <footer class="advice-footer text-white">
+        <!-- แถบสมัครข่าวสาร -->
+        <div class="newsletter-bar">
+            <div class="container py-3">
+                <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <i class="fas fa-paper-plane"></i>
+                        <span class="fw-semibold">สมัครรับข้อมูลข่าวสาร และโปรโมชั่น</span>
+                    </div>
+                    <div class="ms-md-auto w-100" style="max-width: 520px;">
+                        <div class="input-group input-group-lg">
+                            <input type="email" class="form-control rounded-start-pill" placeholder="Email"
+                                aria-label="Email">
+                            <button class="btn btn-light rounded-end-pill px-4 fw-semibold">ยืนยัน</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- เนื้อหา footer -->
+        <div class="container py-5">
+            <div class="row g-4">
+                <!-- คอลัมน์โลโก้ + ติดต่อ -->
+                <div class="col-12 col-lg-4">
+                    <img src="pic/logo/logo-color.webp" alt="Advice" height="42" class="mb-3">
+
+                    <!-- กล่องติดต่อ -->
+                    <div class="contact-card d-flex gap-3 align-items-start p-3 rounded-3 mb-3">
+                        <div class="icon-wrap rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="fas fa-phone fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">ติดต่อสอบถาม</div>
+                            <div>โทร. <span class="fw-semibold">1491</span> หรือ <span
+                                    class="fw-semibold">02-908-8888</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 small lh-base text-dark">
+                        บริษัท แอดไวซ์ ไอที อินฟินิท จำกัด (มหาชน) (สำนักงานใหญ่)<br>
+                        74/1 หมู่ 1 ต.หน้าไม้ อ.ลาดหลุมแก้ว จ.ปทุมธานี 11120
+                    </div>
+
+                    <!-- โซเชียล -->
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-line"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-messenger"></i></a>
+                    </div>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 1 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">ช้อปปิ้ง</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เข้าสู่ระบบสำหรับซื้อออนไลน์</a></li>
+                        <li><a href="#">โปรโมชันออนไลน์</a></li>
+                        <li><a href="#">Flash Sale</a></li>
+                        <li><a href="#">แบบสั่งซื้อ-ชำระเงิน</a></li>
+                        <li><a href="#">เช็คสถานะการสั่งซื้อ</a></li>
+                        <li><a href="#">เช็คสถานะการจัดส่ง</a></li>
+                        <li><a href="#">วิธีการสั่งซื้อ</a></li>
+                        <li><a href="#">วิธีการชำระเงิน</a></li>
+                        <li><a href="#">วิธีการจัดส่ง</a></li>
+                        <li><a href="#">ติดต่อเจ้าหน้าที่บริการลูกค้าออนไลน์</a></li>
+                    </ul>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 2 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">ดีลเลอร์</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เข้าสู่ระบบสำหรับดีลเลอร์/ช่าง</a></li>
+                        <li><a href="#">แจ้งชำระเงิน</a></li>
+                        <li><a href="#">เช็คสถานะการจัดส่ง</a></li>
+                        <li><a href="#">สมัครเป็นดีลเลอร์/ช่าง (ดีเลอร์)</a></li>
+                        <li><a href="#">สมัครเป็นดีลเลอร์/ช่าง (ช่าง)</a></li>
+                        <li><a href="#">ลงทะเบียนลูกค้าต่างๆ</a></li>
+                        <li><a href="#">วิธีการสั่งซื้อ</a></li>
+                        <li><a href="#">วิธีการชำระเงิน</a></li>
+                    </ul>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 3 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">บริการช่วยเหลือ</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เงื่อนไขการรับประกัน</a></li>
+                        <li><a href="#">ตรวจสอบการรับประกัน</a></li>
+                        <li><a href="#">เช็คคิวงานบริการ</a></li>
+                        <li><a href="#">คำถามพบบ่อย</a></li>
+                        <li><a href="#">นโยบายส่วนบุคคล</a></li>
+                    </ul>
+                    <h6 class="fw-semibold mt-4 mb-2">เครื่องหมายรับรอง</h6>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <!-- ใส่โลโก้จริงของคุณแทน src ด้านล่าง -->
+                        <img src="pic/logo/logo-dbd.webp" alt="DBD" class="cert">
+                        <img src="pic/logo/ISO-IEC-27001.png" alt="ISO" class="cert">
+                        <img src="pic/logo/IGC-ISO-14001.webp" alt="IIGC" class="cert">
+                        <img src="pic/logo/iso_eng_1.webp" alt="LAS" class="cert">
+                    </div>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 4 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">ติดต่อเรา</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เกี่ยวกับเรา</a></li>
+                        <li><a href="#">นักลงทุนสัมพันธ์</a></li>
+                        <li><a href="#">สมัครงาน</a></li>
+                        <li><a href="#">ที่ตั้งสำนักงานใหญ่</a></li>
+                        <li><a href="#">รับเรื่องร้องเรียน</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+
+    <script>
+        const video = document.getElementById('bgVideo');
+        video.playbackRate = 2;
+
+        (() => {
+            const header = document.getElementById('siteHeader');
+            const spacer = document.getElementById('header-spacer');
+
+            function setSpacerHeight() {
+                // กันคอนเทนต์กระโดด/โดนทับ ด้วยการให้ spacer สูงเท่าหัวเว็บ
+                spacer.style.height = header.offsetHeight + 'px';
+            }
+
+            // ตั้งค่าตอนโหลดและเมื่อขนาดจอเปลี่ยน
+            window.addEventListener('load', setSpacerHeight);
+            window.addEventListener('resize', setSpacerHeight);
+
+            // ใส่/เอาเงาเมื่อมีการสกรอลล์
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 1);
+            });
+        })();
+    </script>
+</body>
+
+</html>

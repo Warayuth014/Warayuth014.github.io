@@ -1,0 +1,146 @@
+html,
+body {
+  max-width: 100%;
+  overflow-x: hidden;
+}
+
+body {
+  font-family: Arial, sans-serif;
+  background-color: #f0f0f0;
+}
+
+.bg-video {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  z-index: -1;
+}
+
+.carousel-image-1 {
+  background-image: url("pic/advice_home_1750327342_1.webp");
+  background-size: contain; /* หรือลอง cover ดูก็ได้ */
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+.carousel-image-2 {
+  background-image: url("pic/advice_home_1750759103_1.webp");
+  background-size: contain; /* หรือลอง cover ดูก็ได้ */
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.carousel-image-3 {
+  background-image: url("pic/advice_home_1751341117_1.webp");
+  background-size: contain; /* หรือลอง cover ดูก็ได้ */
+  background-repeat: no-repeat;
+  background-position: center;
+}
+.carousel-image-4 {
+  background-image: url("pic/advice_home_1751368512_1.webp");
+  background-size: contain; /* หรือลอง cover ดูก็ได้ */
+  background-repeat: no-repeat;
+  background-position: center;
+}
+
+#mySlider2 .carousel-indicators,
+#mySlider3 .carousel-indicators,
+#mySlider4 .carousel-indicators,
+#mySlider5 .carousel-indicators,
+#mySlider6 .carousel-indicators {
+    bottom: -10px;
+}
+
+#mySlider2 .carousel-indicators [data-bs-target],
+#mySlider3 .carousel-indicators [data-bs-target],
+#mySlider4 .carousel-indicators [data-bs-target],
+#mySlider5 .carousel-indicators [data-bs-target],
+#mySlider6 .carousel-indicators [data-bs-target]{
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background-color: #fff;
+    border: none;
+    margin: 0 4px;
+}
+
+.product-card {
+  border-radius: 0; /* ตัดความมนของมุมทั้งหมด */
+  border: 1px solid transparent;
+  transition: border 0.3s ease;
+}
+
+.product-card:hover {
+  border: 2px solid #007bff; /* สีน้ำเงิน Bootstrap */
+}
+
+.carousel-control-prev,
+.carousel-control-next {
+  top: 50%;
+  transform: translateY(-50%);
+  z-index: 10;
+  width: 50px;
+  opacity: 1;
+}
+
+.carousel-control-prev {
+  left: 0 !important;
+}
+
+.carousel-control-next {
+  right: 0 !important;
+}
+
+.carousel-control-prev-icon,
+.carousel-control-next-icon {
+  background-color: rgba(50, 50, 50, 0.6);
+  border-radius: 50%;
+  width: 40px;
+  height: 40px;
+  background-size: 60% 60%;
+}
+
+/* footer */
+.advice-footer { background: #f0f8ff; color: #0c4a7a; }
+  .advice-footer .newsletter-bar { background: #0096FF; color: #fff; }
+  .advice-footer .newsletter-bar .fa-paper-plane { font-size: 1.15rem; }
+  .advice-footer .form-control::placeholder { color: rgba(0,0,0,.45); }
+  .advice-footer .contact-card { background: rgba(255,255,255,.85); color:#0c4a7a; }
+  .advice-footer .contact-card .icon-wrap { width:44px; height:44px; background:#0096FF; color:#fff; }
+  .advice-footer .social-btn {
+    width:36px; height:36px; display:inline-flex; align-items:center; justify-content:center;
+    color:#fff; background:#0c4a7a; border-radius:6px; text-decoration:none;
+  }
+  .advice-footer .social-btn:hover { opacity:.9; }
+  .advice-footer .counter-btn { background:#0096FF; color:#fff; border:none; }
+  .advice-footer h6 { color:#0c4a7a; }
+  .advice-footer .footer-links li { margin-bottom:.4rem; }
+  .advice-footer .footer-links a {
+    color:#0c4a7a; text-decoration:none;
+  }
+  .advice-footer .footer-links a:hover { text-decoration:underline; }
+  .advice-footer .cert {
+    height:32px; background:#fff; border-radius:6px; padding:4px 6px;
+  }
+
+  /* ปรับ input-group โค้งมนให้คล้ายภาพ */
+  .advice-footer .input-group>.form-control { border-right:0; }
+  .advice-footer .input-group .btn { color:#0062a8; }
+  .advice-footer .input-group .form-control,
+  .advice-footer .input-group .btn {
+    box-shadow:none;
+  }
+
+  /* ปรับระยะ container ในจอเล็ก */
+  @media (max-width: 576px) {
+    .advice-footer .newsletter-bar .container { padding-left: 1rem; padding-right: 1rem; }
+  }
+
+/* header */
+  /* ให้ลอยทับคอนเทนต์อื่นชัดเจน */
+  #siteHeader { z-index: 1030; }
+
+  /* ใส่เงาบาง ๆ ตอนเริ่มเลื่อน เพื่อความชัดเจน */
+  #siteHeader.scrolled { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
