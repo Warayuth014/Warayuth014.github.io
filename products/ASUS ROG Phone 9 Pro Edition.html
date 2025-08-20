@@ -1,0 +1,639 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>ASUS ROG Phone 9 Pro Edition</title>
+    <link rel="stylesheet" href="/css/bootstrap.min.css">
+    <script src="/js/bootstrap.bundle.min.js"></script>
+    <link rel="stylesheet" href="/style.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/7.0.0/css/all.min.css">
+</head>
+
+<body>
+    <video autoplay muted loop playsinline class="bg-video" id="bgVideo">
+        <source src="/video/203336-920723750.mp4" type="video/mp4">
+    </video>
+
+    <header id="siteHeader" class="fixed-top p-3 bg-primary bg-opacity-100">
+        <div class="container">
+            <div class="d-flex align-items-center justify-content-between">
+                <img src="/pic/logo/logo.webp" alt="" width="100px" class="me-4">
+
+                <!-- เมนูใหญ่ -->
+                <div class="d-none d-xl-flex align-items-center flex-grow-1">
+                    <ul class="nav me-auto align-items-center">
+                        <form class="me-3" role="search">
+                            <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
+                        </form>
+                        <li class="nav-item"><a class="nav-link text-white" href="#">สินค้า</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-solid fa-fire-flame-curved me-1"></i> ลดแรงสูงสุด 80%</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-regular fa-heart me-1"></i> รายการโปรด</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-solid fa-cart-shopping me-1"></i> ตะกร้าสินค้า</a></li>
+                        <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                    class="fa-regular fa-user me-1"></i> เข้าสู่ระบบ</a></li>
+                    </ul>
+                </div>
+
+                <!-- ปุ่มมือถือ -->
+                <div class="ms-auto d-xl-none d-flex align-items-center">
+                    <button class="btn text-white me-2" type="button" data-bs-toggle="collapse"
+                        data-bs-target="#mobileSearch">
+                        <i class="fa-solid fa-magnifying-glass"></i>
+                    </button>
+                    <button class="btn text-white" type="button" data-bs-toggle="collapse" data-bs-target="#mobileMenu">
+                        <i class="fa-solid fa-bars"></i>
+                    </button>
+                </div>
+            </div>
+
+            <!-- แบบฟอร์มค้นหา (จอเล็กเท่านั้น) -->
+            <div class="collapse d-lg-none mt-2 w-100" id="mobileSearch">
+                <form class="px-3" role="search">
+                    <input type="search" class="form-control" placeholder="Search..." aria-label="Search">
+                </form>
+            </div>
+
+            <!-- เมนูมือถือ -->
+            <div class="collapse d-lg-none mt-2 w-100" id="mobileMenu">
+                <ul class="nav flex-column text-center">
+                    <li class="nav-item"><a class="nav-link text-white" href="#">สินค้า</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                class="fa-solid fa-fire-flame-curved me-1"></i> ลดแรง</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                class="fa-regular fa-heart me-1"></i> รายการโปรด</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i
+                                class="fa-solid fa-cart-shopping me-1"></i> ตะกร้าสินค้า</a></li>
+                    <li class="nav-item"><a class="nav-link text-white" href="#"><i class="fa-regular fa-user me-1"></i>
+                            เข้าสู่ระบบ</a></li>
+                </ul>
+            </div>
+        </div>
+    </header>
+    <div id="header-spacer"></div>
+
+    <!-- Breadcrumb -->
+    <nav aria-label="breadcrumb" class="bg-light border-top">
+        <div class="container py-2">
+            <ol class="breadcrumb mb-0">
+                <li class="breadcrumb-item">
+                    <a href="/index.html" class="text-decoration-none text-secondary">Home</a>
+                </li>
+                <li class="breadcrumb-item active text-dark fw-semibold" aria-current="page">
+                    ASUS ROG Phone 9 Pro Edition
+                </li>
+            </ol>
+        </div>
+    </nav>
+
+    <div class="container my-4">
+        <div class="row g-4">
+
+            <!-- ซ้าย: รูป + รายละเอียด -->
+            <div class="col-12 col-lg-8">
+                <div class="border rounded p-4 bg-white shadow-sm">
+                    <div class="row g-4">
+
+                        <!-- รูป -->
+                        <div class="col-12 col-lg-6">
+                            <div class="position-relative text-center">
+                                <div class="zoom-container">
+                                    <img id="mainImage" class="main-img"
+                                        src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/AI2501-3B030WW Black.webp"
+                                        alt="ASUS ROG Phone 9 Pro Edition">
+                                    <div class="zoom-result"></div>
+                                </div>
+                            </div>
+
+                            <!-- แกลเลอรี -->
+                            <div class="d-flex gap-2 justify-content-center mt-2">
+                                <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/AI2501-3B030WW Black.webp"
+                                    class="img-thumbnail thumb" width="70" onclick="changeImage(this)">
+                                <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/A0165858OK_BIG_2.webp"
+                                    class="img-thumbnail thumb" width="70" onclick="changeImage(this)">
+                                <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/A0165858OK_BIG_3.webp"
+                                    class="img-thumbnail thumb" width="70" onclick="changeImage(this)">
+                                <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/A0165858OK_BIG_4.webp"
+                                    class="img-thumbnail thumb" width="70" onclick="changeImage(this)">
+                            </div>
+                        </div>
+
+                        <!-- รายละเอียด -->
+                        <div class="col-12 col-lg-6 d-flex flex-column">
+                            <h4>ASUS ROG Phone 9 Pro Edition (24+1TB/AI2501-3B030WW) Black</h4>
+                            <ul class="small text-muted">
+                                <li>CPU : Qualcomm Snapdragon 8 Elite Mobile</li>
+                                <li>RAM : 24GB LPDDR5X</li>
+                                <li>ROM : 1TB UFS4.0</li>
+                                <li>Display : 6.78” Flexible AMOLED 165Hz HDR10 FHD+</li>
+                                <li>Front Camera : 32.0MP</li>
+                                <li>Back Camera : 50.0MP + 13.0MP + 32.0MP</li>
+                                <li>OS : Android 15</li>
+                                <li>Battery : 5800mAh (Quick Charge 5.0 / PD Charging)</li>
+                            </ul>
+                            <p class="text-secondary">ประกัน 1 ปี</p>
+
+                            <div>
+                                <a href="#" class="btn btn-outline-primary btn-sm">ดูเงื่อนไขการจัดส่ง</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- ✅ Tabs ด้านล่าง -->
+                <div class="border rounded p-4 bg-white shadow-sm mt-3">
+                    <!-- Nav Tabs -->
+                    <ul class="nav nav-tabs border-bottom-0 sticky-top bg-white" id="productTab" role="tablist">
+                        <li class="nav-item">
+                            <a class="nav-link active fw-semibold text-primary" href="#detail">รายละเอียดสินค้า</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold text-dark" href="#spec">คุณสมบัติ</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link fw-semibold text-dark" href="#link">ลิงก์ที่เกี่ยวข้อง</a>
+                        </li>
+                    </ul>
+
+                    <!-- ✅ เนื้อหาต่อเนื่อง ไม่ซ่อน -->
+                    <div class="pt-3">
+
+                        <!-- รายละเอียดสินค้า -->
+                        <section id="detail" class="mb-5">
+                            <h5 class="mb-3">รายละเอียดสินค้า</h5>
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501222199889424.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501222238590015.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501221708194994.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501222517264526.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501221752628382.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501228096058911.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501222407386602.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501222393441147.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501227796070343.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501227360474534.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501223004461093.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+                            <img src="/pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/202501222668903621.webp"
+                                class="img-fluid rounded shadow-sm" alt="รายละเอียดสินค้า">
+
+                            <br><br>
+                            <p>อ้างอิงจาก : https://rog.asus.com<br>
+                                ความจุรอม 1TB แรม 24GB เฉพาะรุ่น ROG Phone 9 Pro Edition</p>
+                        </section>
+                    </div>
+                </div>
+
+                <div class="border rounded p-4 bg-white shadow-sm mt-3">
+                    <!-- คุณสมบัติ -->
+                    <section id="spec" class="mb-5">
+                        <h5 class="mb-3">คุณสมบัติ</h5>
+                        <table class="table table-bordered">
+                            <tbody>
+                                <tr>
+                                    <th>Brand</th>
+                                    <td>ASUS</td>
+                                </tr>
+                                <tr>
+                                    <th>Model</th>
+                                    <td>ROG Phone 9 Pro Edition</td>
+                                </tr>
+                                <tr>
+                                    <th>Processor</th>
+                                    <td>Qualcomm Snapdragon 8 Elite, Platform 4.3GHz, 64-bit, Octa-core Processor</td>
+                                </tr>
+                                <tr>
+                                    <th>GPU</th>
+                                    <td>Qualcomm Adreno 830</td>
+                                </tr>
+                                <tr>
+                                    <th>RAM</th>
+                                    <td>24GB LPDDR5X</td>
+                                </tr>
+                                <tr>
+                                    <th>ROM</th>
+                                    <td>1TB UFS4.0</td>
+                                </tr>
+                                <tr>
+                                    <th>Memory Card</th>
+                                    <td>None</td>
+                                </tr>
+                                <tr>
+                                    <th>Display</th>
+                                    <td>
+                                        6.78" Flexible AMOLED HDR10<br>
+                                        Refresh Rate : LTPO 1-120Hz, Max to 165Hz (185Hz in Game Genie)<br>
+                                        Brightness : 2,500 nits peak
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Resolution</th>
+                                    <td>2400x1080 (FHD+)</td>
+                                </tr>
+                                <tr>
+                                    <th>Front Camera</th>
+                                    <td>
+                                        32.0MP, Pixel binning 1.4μm (Actual output: 8MP)<br>
+                                        22mm equivalent focal length in 35mm film camera
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Back Camera</th>
+                                    <td>
+                                        <b>Main:</b> 50.0MP Sony Lytia 700, 1/1.56” sensor, F1.9, Gimbal OIS,<br>
+                                        Quad Bayer, 23.8mm focal length, 6p lens, PDAF, LED flash<br><br>
+                                        <b>Ultrawide:</b> 13.0MP, 120°, Free-form lens, 12.7mm focal length<br><br>
+                                        <b>Telephoto:</b> 32.0MP, f/2.4, OIS, 3X optical zoom, Pixel binning 1.4μm (8MP
+                                        output)
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>I/O Interfaces</th>
+                                    <td>USB Type-C, AUX 3.5mm</td>
+                                </tr>
+                                <tr>
+                                    <th>Audio</th>
+                                    <td>
+                                        Multi-magnet dual stereo speakers<br>
+                                        Hi-Res Audio up to 384kHz/32-bit (3.5mm output)<br>
+                                        Dirac Virtuo for Headphone™ Spatial Sound<br>
+                                        AudioWizard with multiple listening profiles
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Network</th>
+                                    <td>Wi-Fi 802.11 be/ax/ac/a/b/g/n</td>
+                                </tr>
+                                <tr>
+                                    <th>Bluetooth</th>
+                                    <td>Bluetooth 5.4</td>
+                                </tr>
+                                <tr>
+                                    <th>2G / 3G / 4G / 5G</th>
+                                    <td>Yes (รองรับครบ)</td>
+                                </tr>
+                                <tr>
+                                    <th>Sensor</th>
+                                    <td>
+                                        In-display fingerprint, Face recognition, Accelerometer,<br>
+                                        E-compass, Gyroscope, Proximity, Ambient-light sensor, AirTrigger
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>ระบบแผนที่ดาวเทียม</th>
+                                    <td>GNSS: GPS (L1/L5), Glonass (L1), Galileo (E1/E5a), BeiDou (B1i/B1c/B2a)</td>
+                                </tr>
+                                <tr>
+                                    <th>Operating System</th>
+                                    <td>Android 15</td>
+                                </tr>
+                                <tr>
+                                    <th>Battery</th>
+                                    <td>5800mAh (Quick Charge 5.0 / PD Charging)</td>
+                                </tr>
+                                <tr>
+                                    <th>SIM</th>
+                                    <td>
+                                        Dual-SIM / Dual-Standby<br>
+                                        Slot 1 : 5G/4G/3G/2G Nano SIM<br>
+                                        Slot 2 : 5G/4G/3G/2G Nano SIM
+                                    </td>
+                                </tr>
+                                <tr>
+                                    <th>Function calls</th>
+                                    <td>Yes</td>
+                                </tr>
+                                <tr>
+                                    <th>Dimension</th>
+                                    <td>(W x D x H) : 7.70 x 0.89 x 16.30 cm</td>
+                                </tr>
+                                <tr>
+                                    <th>Net Weight</th>
+                                    <td>0.22 KG</td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </section>
+                </div>
+
+                <div class="border rounded p-4 bg-white shadow-sm mt-3">
+                    <!-- ลิงก์ที่เกี่ยวข้อง -->
+                    <section id="link" class="mb-5">
+                        <h5 class="mb-3">ลิงก์ที่เกี่ยวข้อง</h5>
+                        <hr>
+                        <a href="https://rog.asus.com/phones/rog-phone-9-pro/spec/"><img
+                                src="/pic/icon-more-details.webp" alt=""></a>
+                    </section>
+                </div>
+            </div>
+
+            <!-- ขวา: กล่องราคา -->
+            <div class="col-12 col-lg-4">
+                <div class="border rounded p-4 bg-white shadow-sm">
+                    <h5 class="mb-3">ASUS ROG Phone 9 Pro Edition</h5>
+                    <p class="text-muted small mb-1">รหัสสินค้า - A0165858</p>
+
+                    <p class="mb-1">ราคาหน้าร้าน <span class="fw-bold text-decoration-line-through">49,990.-</span></p>
+                    <p class="fs-3 fw-bold text-primary mb-1">43,000.-</p>
+                    <p class="text-success small">ราคานี้เฉพาะออนไลน์เท่านั้น</p>
+
+                    <button class="btn btn-primary w-100 mb-3">
+                        <i class="fa-solid fa-cart-shopping me-2"></i> ใส่ตะกร้า
+                    </button>
+
+                    <div class="d-flex justify-content-between text-muted small mb-3">
+                        <span><i class="fa-regular fa-heart me-1"></i> รายการโปรด</span>
+                        <span><i class="fa-solid fa-scale-balanced me-1"></i> เปรียบเทียบ</span>
+                        <span><i class="fa-solid fa-share-nodes me-1"></i> แชร์</span>
+                    </div>
+                </div>
+
+                <!-- ✅ กล่องใหม่: การชำระเงิน + การรับประกัน -->
+                <div class="border rounded p-3 bg-white mt-3 shadow-sm">
+                    <div class="d-flex justify-content-around">
+                        <a href="#" class="text-decoration-none text-primary d-flex align-items-center">
+                            <img src="/pic/card/icon-howtopay.webp" alt="วิธีการชำระเงิน" width="30" class="me-2">
+                            <span>วิธีการชำระเงิน</span>
+                        </a>
+                        <a href="#" class="text-decoration-none text-primary d-flex align-items-center">
+                            <img src="/pic/card/icon-warranty.webp" alt="เงื่อนไขการรับประกัน" width="30" class="me-2">
+                            <span>เงื่อนไขการรับประกัน</span>
+                        </a>
+                    </div>
+                </div>
+
+                <!-- ✅ กล่องใหม่: ผ่อนชำระ 0% -->
+                <div class="border rounded p-3 bg-white mt-3 shadow-sm">
+                    <h6 class="mb-3 fw-bold">ผ่อนชำระ 0% (ออนไลน์)</h6>
+                    <ul class="list-unstyled small">
+                        <li class="d-flex align-items-center mb-2">
+                            <img src="/pic/card/KTC_LOGO.webp" alt="Card" width="40" class="me-2">
+                            <span>14,333.- / 7,167.- / 4,300.- <br><small>3/6/10 เดือน</small></span>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <img src="/pic/card/kbank.webp" alt="Card" width="40" class="me-2">
+                            <span>14,333.- / 7,167.- / 4,300.- <br><small>3/6/10 เดือน</small></span>
+                        </li>
+                        <!-- เพิ่มบัตรต่อได้ -->
+                    </ul>
+
+                    <hr>
+                    <h6 class="mb-3 fw-bold">ผ่อนชำระ 0% (หน้าร้าน)</h6>
+                    <ul class="list-unstyled small">
+                        <li class="d-flex align-items-center mb-2">
+                            <img src="/pic/card/KTC_LOGO.webp" alt="Card" width="40" class="me-2">
+                            <span>16,663.- / 8,332.- / 4,999.- <br><small>3/6/10 เดือน</small></span>
+                        </li>
+                        <li class="d-flex align-items-center mb-2">
+                            <img src="/pic/card/0_Playpan_newLOGO-05.webp" alt="Card" width="40" class="me-2">
+                            <span>8,332.- / 4,999.- <br><small>6/10 เดือน</small></span>
+                        </li>
+                        <!-- เพิ่มบัตรต่อได้ -->
+                    </ul>
+                </div>
+            </div>
+
+
+        </div>
+    </div>
+
+
+    <footer class="advice-footer text-white d-none d-lg-block">
+        <!-- แถบสมัครข่าวสาร -->
+        <div class="newsletter-bar">
+            <div class="container py-3">
+                <div class="d-flex flex-column flex-md-row align-items-center gap-3">
+                    <div class="d-flex align-items-center gap-2 flex-shrink-0">
+                        <i class="fas fa-paper-plane"></i>
+                        <span class="fw-semibold">สมัครรับข้อมูลข่าวสาร และโปรโมชั่น</span>
+                    </div>
+                    <div class="ms-md-auto w-100" style="max-width: 520px;">
+                        <div class="input-group input-group-lg">
+                            <input type="email" class="form-control rounded-start-pill" placeholder="Email"
+                                aria-label="Email">
+                            <button class="btn btn-light rounded-end-pill px-4 fw-semibold">ยืนยัน</button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- เนื้อหา footer -->
+        <div class="container py-5">
+            <div class="row g-4">
+                <!-- คอลัมน์โลโก้ + ติดต่อ -->
+                <div class="col-12 col-lg-4">
+                    <img src="/pic/logo/logo-color.webp" alt="Advice" height="42" class="mb-3">
+
+                    <!-- กล่องติดต่อ -->
+                    <div class="contact-card d-flex gap-3 align-items-start p-3 rounded-3 mb-3">
+                        <div class="icon-wrap rounded-circle d-flex align-items-center justify-content-center">
+                            <i class="fas fa-phone fa-lg"></i>
+                        </div>
+                        <div>
+                            <div class="fw-semibold">ติดต่อสอบถาม</div>
+                            <div>โทร. <span class="fw-semibold">1491</span> หรือ <span
+                                    class="fw-semibold">02-908-8888</span></div>
+                        </div>
+                    </div>
+
+                    <div class="mb-3 small lh-base text-dark">
+                        บริษัท แอดไวซ์ ไอที อินฟินิท จำกัด (มหาชน) (สำนักงานใหญ่)<br>
+                        74/1 หมู่ 1 ต.หน้าไม้ อ.ลาดหลุมแก้ว จ.ปทุมธานี 11120
+                    </div>
+
+                    <!-- โซเชียล -->
+                    <div class="d-flex align-items-center gap-2 mb-3">
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-f"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-line"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-twitter"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-youtube"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-instagram"></i></a>
+                        <a href="#" class="social-btn"><i class="fab fa-facebook-messenger"></i></a>
+                    </div>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 1 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">ช้อปปิ้ง</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เข้าสู่ระบบสำหรับซื้อออนไลน์</a></li>
+                        <li><a href="#">โปรโมชันออนไลน์</a></li>
+                        <li><a href="#">Flash Sale</a></li>
+                        <li><a href="#">แบบสั่งซื้อ-ชำระเงิน</a></li>
+                        <li><a href="#">เช็คสถานะการสั่งซื้อ</a></li>
+                        <li><a href="#">เช็คสถานะการจัดส่ง</a></li>
+                        <li><a href="#">วิธีการสั่งซื้อ</a></li>
+                        <li><a href="#">วิธีการชำระเงิน</a></li>
+                        <li><a href="#">วิธีการจัดส่ง</a></li>
+                        <li><a href="#">ติดต่อเจ้าหน้าที่บริการลูกค้าออนไลน์</a></li>
+                    </ul>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 2 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">ดีลเลอร์</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เข้าสู่ระบบสำหรับดีลเลอร์/ช่าง</a></li>
+                        <li><a href="#">แจ้งชำระเงิน</a></li>
+                        <li><a href="#">เช็คสถานะการจัดส่ง</a></li>
+                        <li><a href="#">สมัครเป็นดีลเลอร์/ช่าง (ดีเลอร์)</a></li>
+                        <li><a href="#">สมัครเป็นดีลเลอร์/ช่าง (ช่าง)</a></li>
+                        <li><a href="#">ลงทะเบียนลูกค้าต่างๆ</a></li>
+                        <li><a href="#">วิธีการสั่งซื้อ</a></li>
+                        <li><a href="#">วิธีการชำระเงิน</a></li>
+                    </ul>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 3 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">บริการช่วยเหลือ</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เงื่อนไขการรับประกัน</a></li>
+                        <li><a href="#">ตรวจสอบการรับประกัน</a></li>
+                        <li><a href="#">เช็คคิวงานบริการ</a></li>
+                        <li><a href="#">คำถามพบบ่อย</a></li>
+                        <li><a href="#">นโยบายส่วนบุคคล</a></li>
+                    </ul>
+                    <h6 class="fw-semibold mt-4 mb-2">เครื่องหมายรับรอง</h6>
+                    <div class="d-flex flex-wrap gap-2 align-items-center">
+                        <!-- ใส่โลโก้จริงของคุณแทน src ด้านล่าง -->
+                        <img src="/pic/logo/logo-dbd.webp" alt="DBD" class="cert">
+                        <img src="/pic/logo/ISO-IEC-27001.png" alt="ISO" class="cert">
+                        <img src="/pic/logo/IGC-ISO-14001.webp" alt="IIGC" class="cert">
+                        <img src="/pic/logo/iso_eng_1.webp" alt="LAS" class="cert">
+                    </div>
+                </div>
+
+                <!-- คอลัมน์ลิงก์ 4 -->
+                <div class="col-6 col-md-3 col-lg-2">
+                    <h6 class="fw-semibold mb-3">ติดต่อเรา</h6>
+                    <ul class="list-unstyled footer-links">
+                        <li><a href="#">เกี่ยวกับเรา</a></li>
+                        <li><a href="#">นักลงทุนสัมพันธ์</a></li>
+                        <li><a href="#">สมัครงาน</a></li>
+                        <li><a href="#">ที่ตั้งสำนักงานใหญ่</a></li>
+                        <li><a href="#">รับเรื่องร้องเรียน</a></li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </footer>
+
+    <!-- Bottom Bar (มือถือเท่านั้น) -->
+    <nav class="bottom-bar d-lg-none">
+        <a href="#" class="bottom-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>หน้าแรก</span>
+        </a>
+        <a href="#" class="bottom-item">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>ตะกร้าสินค้า</span>
+        </a>
+        <a href="#" class="bottom-item">
+            <i class="fa-regular fa-user"></i>
+            <span>บัญชี</span>
+        </a>
+    </nav>
+
+    <!-- ปุ่ม Back to Top -->
+    <button id="backToTop">
+        <i class="fas fa-arrow-up"></i>
+    </button>
+
+    <script>
+        const video = document.getElementById('bgVideo');
+        video.playbackRate = 2;
+
+        (() => {
+            const header = document.getElementById('siteHeader');
+            const spacer = document.getElementById('header-spacer');
+
+            function setSpacerHeight() {
+                // กันคอนเทนต์กระโดด/โดนทับ ด้วยการให้ spacer สูงเท่าหัวเว็บ
+                spacer.style.height = header.offsetHeight + 'px';
+            }
+
+            // ตั้งค่าตอนโหลดและเมื่อขนาดจอเปลี่ยน
+            window.addEventListener('load', setSpacerHeight);
+            window.addEventListener('resize', setSpacerHeight);
+
+            // ใส่/เอาเงาเมื่อมีการสกรอลล์
+            window.addEventListener('scroll', () => {
+                header.classList.toggle('scrolled', window.scrollY > 1);
+            });
+        })();
+
+        // zoom
+        const mainImg = document.querySelector('.main-img');
+        const zoomResult = document.querySelector('.zoom-result');
+
+        function changeImage(element) {
+            const mainImage = document.getElementById("mainImage");
+            mainImage.src = element.src;
+
+            // อัปเดต background ของ zoomResult ด้วย
+            mainImage.onload = () => {
+                zoomResult.style.backgroundImage = `url(${mainImage.src})`;
+                zoomResult.style.backgroundSize = `${mainImage.naturalWidth}px ${mainImage.naturalHeight}px`;
+            }
+        }
+
+        mainImg.addEventListener("load", () => {
+            zoomResult.style.backgroundImage = `url(${mainImg.src})`;
+
+            // ใช้ขนาดจริงของไฟล์ภาพ
+            const imgW = mainImg.naturalWidth;
+            const imgH = mainImg.naturalHeight;
+            zoomResult.style.backgroundSize = `${imgW}px ${imgH}px`;
+        });
+
+        mainImg.addEventListener('mouseenter', () => {
+            zoomResult.style.display = 'block';
+        });
+        mainImg.addEventListener('mouseleave', () => {
+            zoomResult.style.display = 'none';
+        });
+        mainImg.addEventListener('mousemove', function (e) {
+            const rect = mainImg.getBoundingClientRect();
+            const x = ((e.clientX - rect.left) / rect.width) * 100;
+            const y = ((e.clientY - rect.top) / rect.height) * 100;
+            zoomResult.style.backgroundPosition = `${x}% ${y}%`;
+        });
+
+        // Back to Top
+        const backToTop = document.getElementById("backToTop");
+
+        // แสดงปุ่มเมื่อ scroll ลง
+        window.addEventListener("scroll", () => {
+            if (window.scrollY > 50) {
+                backToTop.style.display = "block";
+            } else {
+                backToTop.style.display = "none";
+            }
+        });
+
+        // คลิกแล้วเลื่อนขึ้นบนสุด
+        backToTop.addEventListener("click", () => {
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth"
+            });
+        });
+    </script>
+</body>
+
+</html>

@@ -318,16 +318,14 @@
                         <div class="row justify-content-center g-0">
                             <!-- Product 1 -->
                             <div class="col-12 col-sm-6 col-md-4">
-                                <div class="card product-card h-100 p-2">
-                                    <!-- กล่องรูปสินค้า (relative) -->
+                                <div class="card product-card h-100 p-2 product-link"
+                                    data-href="./products/ASUS ROG Phone 9 Pro Edition.html">
+                                    <!-- กล่องรูปสินค้า -->
                                     <div class="position-relative">
-                                        <!-- ป้าย Best Price -->
                                         <img src="https://img.advice.co.th/images_nas/labelproduct/LabelDesktop/Label-bestPrice_v1.png"
                                             alt="Best Price" class="position-absolute"
                                             style="top:5px; left:0px; width:100px; z-index:10;">
-
-                                        <!-- รูปสินค้า -->
-                                        <img src="pic/section6 top sell/ASUS ROG Phone 9 Pro Edition (24+1TB/AI2501-3B030WW) Black.webp"
+                                        <img src="pic/section6 top sell/ASUS ROG Phone 9 Pro Edition 24+1TB/AI2501-3B030WW Black.webp"
                                             class="card-img-top mb-2" alt="ASUS ROG Phone 9 Pro Edition">
                                     </div>
 
@@ -338,8 +336,7 @@
                                         </p>
 
                                         <!-- สเปคย่อ -->
-                                        <p class="spec text-muted small mb-2"
-                                            title="Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP + 32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM">
+                                        <p class="spec text-muted small mb-2">
                                             Octa-core 4.3GHz / 24GB / 1TB / 6.78'' / F 32.0MP / B 50.0MP + 13.0MP +
                                             32.0MP / Android 15 / 5800mAh / 5G / 2 Nano-SIM
                                         </p>
@@ -352,7 +349,7 @@
 
                                         <!-- ปุ่มราคาออนไลน์ -->
                                         <button
-                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center"
+                                            class="btn btn-primary w-100 fw-bold mb-1 d-flex justify-content-center align-items-center add-to-cart"
                                             style="background-color:#0096FF; border:none;">
                                             <i class="fas fa-shopping-cart me-2"></i> 43,000.-
                                             <span class="small d-block ms-1">ราคาเฉพาะออนไลน์</span>
@@ -617,7 +614,7 @@
     </section>
 
 
-    <footer class="advice-footer text-white">
+    <footer class="advice-footer text-white d-none d-lg-block">
         <!-- แถบสมัครข่าวสาร -->
         <div class="newsletter-bar">
             <div class="container py-3">
@@ -739,6 +736,21 @@
         </div>
     </footer>
 
+    <!-- Bottom Bar (มือถือเท่านั้น) -->
+    <nav class="bottom-bar d-lg-none">
+        <a href="#" class="bottom-item active">
+            <i class="fa-solid fa-house"></i>
+            <span>หน้าแรก</span>
+        </a>
+        <a href="#" class="bottom-item">
+            <i class="fa-solid fa-cart-shopping"></i>
+            <span>ตะกร้าสินค้า</span>
+        </a>
+        <a href="#" class="bottom-item">
+            <i class="fa-regular fa-user"></i>
+            <span>บัญชี</span>
+        </a>
+    </nav>
 
     <script>
         const video = document.getElementById('bgVideo');
@@ -762,6 +774,21 @@
                 header.classList.toggle('scrolled', window.scrollY > 1);
             });
         })();
+
+        // คลิกการ์ด → ไปหน้ารายละเอียด
+        document.querySelectorAll('.product-link').forEach(card => {
+            card.addEventListener('click', function () {
+                window.location.href = this.dataset.href;
+            });
+        });
+
+        // คลิกปุ่ม → หยุดไม่ให้ไปหน้าอื่น
+        document.querySelectorAll('.add-to-cart').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                e.stopPropagation(); // กันไม่ให้การ์ดทำงาน
+                alert("สินค้าใส่ในตะกร้าแล้ว!"); // ใส่ logic เพิ่มตะกร้าตามระบบของพี่
+            });
+        });
     </script>
 </body>
 

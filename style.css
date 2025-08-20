@@ -144,3 +144,88 @@ body {
 
   /* ใส่เงาบาง ๆ ตอนเริ่มเลื่อน เพื่อความชัดเจน */
   #siteHeader.scrolled { box-shadow: 0 4px 12px rgba(0,0,0,.08); }
+
+.bottom-bar {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  height: 65px;
+  background: #fff;
+  border-top: 1px solid #ddd;
+  display: flex;
+  justify-content: space-around;
+  align-items: center;
+  z-index: 1000;
+}
+
+.bottom-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column; /* เรียงแนวตั้ง */
+  align-items: center;    /* จัดตรงกลาง */
+  justify-content: center;
+  text-decoration: none;
+  color: #333;
+  font-size: 12px;
+}
+
+.bottom-item i {
+  font-size: 20px;
+  margin-bottom: 4px; /* เว้นระยะ icon กับ text */
+}
+
+.bottom-item.active {
+  color: #007bff;
+}
+
+.bottom-item.active i {
+  color: #007bff;
+}
+
+/* zoom */
+.zoom-container {
+  position: relative;
+  width: 100%;
+  max-width: 400px; /* ปรับตาม layout */
+}
+.main-img {
+  width: 100%;
+  display: block;
+  cursor: crosshair;
+  border: 1px solid #ddd;
+}
+.zoom-result {
+  position: absolute;
+  top: 0;
+  left: 105%;
+  width: 400px;
+  height: 400px;
+  border: 1px solid #ddd;
+  background-repeat: no-repeat;
+  display: none;
+  z-index: 50;
+}
+
+/* backToTop */
+#backToTop {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    width: 45px;
+    height: 45px;
+    border: none;
+    border-radius: 50%;
+    background-color: #0094e9;
+    color: white;
+    font-size: 20px;
+    cursor: pointer;
+    box-shadow: 0 2px 6px rgba(0,0,0,0.3);
+    display: none; /* ซ่อนก่อน */
+    z-index: 999;
+    transition: opacity 0.3s;
+  }
+
+  #backToTop:hover {
+    background-color: #0077c2;
+  }
