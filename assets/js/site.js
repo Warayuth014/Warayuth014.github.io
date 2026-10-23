@@ -115,7 +115,13 @@ function renderAll() {
 
   renderNav(content, lang, order.map((s) => s.id));
   const name = t(content.hero?.name, lang).trim();
-  document.title = name ? `${name} | ${ui('heroTag', lang)}` : document.title;
+  const metaTitle = t(content.meta?.title, lang).trim();
+  document.title = metaTitle || (name ? `${name} | ${ui('heroTag', lang, content)}` : document.title);
+  const metaDesc = t(content.meta?.description, lang).trim();
+  if (metaDesc) document.querySelector('meta[name="description"]')?.setAttribute('content', metaDesc);
+  const footer = t(content.ui?.footer, lang).trim();
+  const footerEl = document.querySelector('.site-foot span');
+  if (footer && footerEl) footerEl.textContent = footer;
   watchFxPreferences();
   enableFx();
   try {

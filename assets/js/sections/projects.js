@@ -59,5 +59,5 @@ function card(p, i, lang) {
 }
 
 export function render(el, content, lang) {
-  shell(el, 'projects', lang, `<div class="cards">${list(content.projects).map((p, i) => card(p, i, lang)).join('')}</div>`);
+  shell(el, 'projects', content, lang, `<div class="cards">${list(content.projects).map((p, i) => card(p, i, lang)).join('')}</div>`);
 }

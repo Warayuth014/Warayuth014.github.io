@@ -8,5 +8,5 @@ export function render(el, content, lang) {
         <h3 class="mono">${escapeHtml(t(g?.group, lang))}</h3>
         <ul class="chips">${list(g?.items).filter((x) => typeof x === 'string').map((x) => `<li>${escapeHtml(x)}</li>`).join('')}</ul>
       </div>`).join('');
-  shell(el, 'skills', lang, `<div class="skill-rows">${rows}</div>`);
+  shell(el, 'skills', content, lang, `<div class="skill-rows">${rows}</div>`);
 }

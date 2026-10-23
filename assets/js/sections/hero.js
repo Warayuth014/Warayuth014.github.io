@@ -27,11 +27,11 @@ export function render(el, content, lang) {
   const thai = /[\u0E00-\u0E7F]/.test(name) ? ' lang="th"' : '';
   grid.innerHTML = `
       <div class="hero-copy">
-        <p class="hero-tag mono"><span class="prompt" aria-hidden="true">&gt;</span> ${escapeHtml(ui('heroTag', lang))}<span class="cursor" aria-hidden="true">_</span></p>
+        <p class="hero-tag mono"><span class="prompt" aria-hidden="true">&gt;</span> ${escapeHtml(ui('heroTag', lang, content))}<span class="cursor" aria-hidden="true">_</span></p>
         <h1 class="hero-name"${thai}><span class="n1">${escapeHtml(first)}</span>${rest ? ` <span class="n2">${escapeHtml(rest)}</span>` : ''}</h1>
         <p class="hero-intro">${escapeHtml(t(h.intro, lang))}</p>
         <p class="hero-cta">
-          <a class="btn btn-primary" href="#projects">${escapeHtml(t(h.ctaWork, lang) || ui('projects', lang))}</a>
+          <a class="btn btn-primary" href="#projects">${escapeHtml(t(h.ctaWork, lang) || ui('projects', lang, content))}</a>
           <a class="btn btn-ghost" href="/resume/">${escapeHtml(t(h.ctaResume, lang) || ui('resume', lang))}</a>
         </p>
       </div>

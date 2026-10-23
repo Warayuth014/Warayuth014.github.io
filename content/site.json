@@ -11,6 +11,26 @@
     "effects": { "hero3d": true, "threads": true }
   },
   "nav": ["about", "projects", "skills", "journey", "articles", "contact"],
+  "ui": {
+    "tagline": { "th": "กลางวัน dev · กลางคืน gamer", "en": "dev by day · gamer by night" },
+    "sectionTitles": {
+      "about": { "th": "เกี่ยวกับผม", "en": "About me" },
+      "projects": { "th": "ผลงาน", "en": "Projects" },
+      "skills": { "th": "ทักษะ", "en": "Skills" },
+      "journey": { "th": "เส้นทาง", "en": "Journey" },
+      "articles": { "th": "บทความ", "en": "Articles" },
+      "contact": { "th": "ติดต่อ", "en": "Contact" }
+    },
+    "contactLead": { "th": "มีงานหรืออยากคุยกัน ส่งข้อความมาได้เลย", "en": "Got a project or just want to talk? Drop me a line." },
+    "footer": { "th": "© Warayuth Bunbanlu", "en": "© Warayuth Bunbanlu" }
+  },
+  "meta": {
+    "title": { "th": "Warayuth Bunbanlu | กลางวัน dev · กลางคืน gamer", "en": "Warayuth Bunbanlu | dev by day · gamer by night" },
+    "description": {
+      "th": "เว็บส่วนตัวของ Warayuth Bunbanlu นักพัฒนาซอฟต์แวร์ในกรุงเทพ ผลงาน ทักษะ และบทความทั้งภาษาไทยและอังกฤษ",
+      "en": "Personal site of Warayuth Bunbanlu, a software developer in Bangkok. Projects, skills and notes in Thai and English."
+    }
+  },
   "sections": [
     { "id": "hero", "visible": true },
     { "id": "about", "visible": true },
@@ -167,5 +187,10 @@
     ]
   },
   "resume": { "file": null, "kind": null },
+  "resumePage": {
+    "title": { "th": "เรซูเม่", "en": "Résumé" },
+    "comingSoon": { "th": "เร็ว ๆ นี้", "en": "Coming soon" },
+    "comingSoonText": { "th": "เรซูเม่กำลังจัดให้เรียบร้อย ไว้กลับมาดูใหม่นะครับ", "en": "My résumé is still being put together. Please check back soon." }
+  },
   "workerUrl": ""
 }

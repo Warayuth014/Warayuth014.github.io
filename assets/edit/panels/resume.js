@@ -1,5 +1,5 @@
 import { safeAsset } from '../../../shared/schema.js';
-import { el, button, nextId } from '../ui.js';
+import { el, button, nextId, lInput } from '../ui.js';
 
 export const id = 'resume';
 export const title = 'เรซูเม่';
@@ -7,6 +7,7 @@ export const hint = 'Résumé';
 
 export function render(root, ctx) {
   const resume = ctx.draft.site.resume;
+  const page = ctx.draft.site.resumePage;
   const status = el('p', { class: 'note', role: 'status' });
   const box = el('div', { class: 'resume-box' });
   const inputId = nextId();
@@ -62,5 +63,9 @@ export function render(root, ctx) {
       el('label', { for: inputId }, el('span', { class: 'lbl', text: 'อัปโหลดเรซูเม่ (PDF หรือรูป ไม่เกิน 8 MB)' }), el('small', { class: 'hint', text: 'Upload résumé' })),
       input),
     err ? el('p', { class: 'err', role: 'alert', text: err }) : null,
-    box, status);
+    box, status,
+    el('h3', { text: 'ข้อความหน้าเรซูเม่ (Résumé page texts)' }),
+    lInput(ctx, { obj: page, key: 'title', path: 'resumePage.title', label: 'หัวข้อหน้า', hint: 'Page title (empty = default)' }),
+    lInput(ctx, { obj: page, key: 'comingSoon', path: 'resumePage.comingSoon', label: 'ข้อความ "เร็ว ๆ นี้"', hint: 'Coming soon (empty = default)' }),
+    lInput(ctx, { obj: page, key: 'comingSoonText', path: 'resumePage.comingSoonText', label: 'ข้อความอธิบายตอนยังไม่มีไฟล์', hint: 'Coming soon text (empty = default)', multiline: true, rows: 3 }));
 }

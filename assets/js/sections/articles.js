@@ -41,7 +41,7 @@ function load() {
 }
 
 export function render(el, content, lang) {
-  shell(el, 'articles', lang, `
+  shell(el, 'articles', content, lang, `
     <div data-articles-list class="articles-list"></div>
     <p class="articles-more"><a class="btn btn-ghost" href="/articles/">${escapeHtml(ui('allArticles', lang))}<span aria-hidden="true"> &rarr;</span></a></p>`);
   fill(el.querySelector('[data-articles-list]'), lang);

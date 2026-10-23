@@ -3,6 +3,7 @@
 // e.g. "projects[2].title.en: ...". All errors are reported, not just the first.
 
 export const SECTION_IDS = ['hero', 'about', 'projects', 'skills', 'journey', 'articles', 'contact'];
+export const SECTION_TITLE_IDS = ['about', 'projects', 'skills', 'journey', 'articles', 'contact'];
 export const FONT_PAIRS = ['default', 'soft', 'tech'];
 export const LINK_KINDS = ['github', 'linkedin', 'facebook', 'instagram', 'website', 'other'];
 
@@ -116,6 +117,25 @@ export function validateSite(site) {
     L(site.hero.intro, 'hero.intro', MAX_TEXT);
     L(site.hero.ctaWork, 'hero.ctaWork', MAX_TITLE);
     L(site.hero.ctaResume, 'hero.ctaResume', MAX_TITLE);
+  }
+
+  // editable texts (optional so older content still validates; the renderers fall back to built-in text)
+  if (site.ui !== undefined && obj(site.ui, 'ui')) {
+    L(site.ui.tagline, 'ui.tagline', MAX_TITLE);
+    if (obj(site.ui.sectionTitles, 'ui.sectionTitles')) {
+      for (const id of SECTION_TITLE_IDS) L(site.ui.sectionTitles[id], `ui.sectionTitles.${id}`, MAX_TITLE);
+    }
+    L(site.ui.contactLead, 'ui.contactLead', MAX_TEXT);
+    L(site.ui.footer, 'ui.footer', MAX_TITLE);
+  }
+  if (site.meta !== undefined && obj(site.meta, 'meta')) {
+    L(site.meta.title, 'meta.title', MAX_TITLE);
+    L(site.meta.description, 'meta.description', MAX_TEXT);
+  }
+  if (site.resumePage !== undefined && obj(site.resumePage, 'resumePage')) {
+    L(site.resumePage.title, 'resumePage.title', MAX_TITLE);
+    L(site.resumePage.comingSoon, 'resumePage.comingSoon', MAX_TITLE);
+    L(site.resumePage.comingSoonText, 'resumePage.comingSoonText', MAX_TEXT);
   }
 
   // about

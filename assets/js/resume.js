@@ -1,5 +1,6 @@
 // Résumé page: shows the PDF or image chosen in /edit, or a friendly "coming soon" state.
 import { escapeHtml } from '../../shared/sanitize.js';
+import { t } from '../../shared/i18n.js';
 import { safeAsset, sameOriginPath } from './sections/util.js';
 import { applyTheme } from './theme.js';
 
@@ -15,17 +16,20 @@ const TEXT = {
 };
 const tx = (k, lang) => TEXT[k][lang];
 
-const state = { resume: undefined, lang: 'en' };
+const state = { resume: undefined, site: null, lang: 'en' };
 
-function soon(lang) {
+/** Owner-edited text from content.resumePage, falling back to the built-in text. */
+const pageText = (page, key, fallbackKey, lang) => t(page?.[key], lang).trim() || tx(fallbackKey, lang);
+
+function soon(lang, page) {
   return `<div class="resume-soon">
-    <p class="big">${escapeHtml(tx('soon', lang))}</p>
-    <p class="muted">${escapeHtml(tx('soonSub', lang))}</p>
+    <p class="big">${escapeHtml(pageText(page, 'comingSoon', 'soon', lang))}</p>
+    <p class="muted">${escapeHtml(pageText(page, 'comingSoonText', 'soonSub', lang))}</p>
     <p><a class="btn btn-ghost" href="/">${escapeHtml(tx('home', lang))}</a></p>
   </div>`;
 }
 
-export function resumeHtml(resume, lang) {
+export function resumeHtml(resume, lang, page) {
   const file = safeAsset(resume?.file);
   const dl = `<p class="resume-actions"><a class="btn btn-primary" href="${escapeHtml(file)}" download>${escapeHtml(tx('download', lang))}</a></p>`;
   if (file && resume.kind === 'pdf') {
@@ -34,17 +38,24 @@ export function resumeHtml(resume, lang) {
   if (file && resume.kind === 'image') {
     return `${dl}<img class="resume-img" src="${escapeHtml(file)}" alt="${escapeHtml(tx('alt', lang))}">`;
   }
-  return soon(lang);
+  return soon(lang, page);
 }
 
 function paint() {
   const { lang } = state;
   document.documentElement.lang = lang;
-  document.title = lang === 'th' ? 'เรซูเม่ | Warayuth Bunbanlu' : 'Résumé | Warayuth Bunbanlu';
+  const page = state.site?.resumePage;
+  const title = t(page?.title, lang).trim();
+  const owner = t(state.site?.hero?.name, lang).trim() || 'Warayuth Bunbanlu';
+  document.title = `${title || (lang === 'th' ? 'เรซูเม่' : 'Résumé')} | ${owner}`;
+  if (title) { const h1 = document.querySelector('.doc-head h1'); if (h1) h1.textContent = title; }
+  const footer = t(state.site?.ui?.footer, lang).trim();
+  const footerEl = document.querySelector('.site-foot span');
+  if (footer && footerEl) footerEl.textContent = footer;
   const body = document.getElementById('resume-body');
   if (state.resume === undefined) return;
   body.dataset.state = state.resume === null ? 'error' : 'ready';
-  body.innerHTML = state.resume === null ? `<p class="status" role="status">${escapeHtml(tx('fail', lang))}</p>` : resumeHtml(state.resume, lang);
+  body.innerHTML = state.resume === null ? `<p class="status" role="status">${escapeHtml(tx('fail', lang))}</p>` : resumeHtml(state.resume, lang, page);
   document.getElementById('lang-toggle')?.setAttribute('aria-label', tx('label', lang));
 }
 
@@ -54,6 +65,7 @@ async function load() {
     const res = await fetch(custom ?? '/content/site.json', { cache: 'no-cache' });
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const site = await res.json();
+    state.site = site && typeof site === 'object' ? site : null;
     state.resume = site && typeof site.resume === 'object' && site.resume ? site.resume : { file: null, kind: null };
     try { applyTheme(site?.theme); } catch { /* default theme */ }
   } catch {

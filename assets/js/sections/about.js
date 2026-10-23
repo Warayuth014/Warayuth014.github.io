@@ -15,7 +15,7 @@ export function render(el, content, lang) {
   const photoHtml = photo
     ? `<img class="photo" src="${escapeHtml(photo)}" alt="" loading="lazy" decoding="async">`
     : `<div class="photo photo-empty" role="img" aria-label="${escapeHtml(ui('photo', lang))}"><span class="mono">${escapeHtml(ui('photo', lang))}</span></div>`;
-  shell(el, 'about', lang, `
+  shell(el, 'about', content, lang, `
     <div class="about-grid">
       <div class="about-story">${paras}</div>
       <aside class="about-side">

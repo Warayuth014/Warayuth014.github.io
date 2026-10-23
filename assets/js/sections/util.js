@@ -1,5 +1,6 @@
 // Shared helpers for section renderers. Everything that reaches innerHTML goes through escapeHtml.
 import { escapeHtml } from '../../../shared/sanitize.js';
+import { t } from '../../../shared/i18n.js';
 
 const UI = {
   about: { th: 'เกี่ยวกับผม', en: 'About me' },
@@ -32,7 +33,20 @@ const LINK_LABELS = {
   github: 'GitHub', linkedin: 'LinkedIn', facebook: 'Facebook', instagram: 'Instagram', website: 'Website', other: 'Link',
 };
 
-export function ui(key, lang) {
+/** The owner-editable text for a key (content.ui), or null when the content has none. */
+function editable(key, content) {
+  const u = content?.ui;
+  if (!u || typeof u !== 'object') return null;
+  if (key === 'heroTag') return u.tagline;
+  if (key === 'contactLead') return u.contactLead;
+  const titles = u.sectionTitles;
+  return titles && typeof titles === 'object' && Object.hasOwn(titles, key) ? titles[key] : null;
+}
+
+/** UI text in `lang`. With `content`, the owner's edited text wins; empty or missing falls back to the built-in text. */
+export function ui(key, lang, content) {
+  const custom = t(editable(key, content), lang);
+  if (custom.trim()) return custom;
   const v = UI[key];
   if (!v) return '';
   return v[lang] ?? v.en;
@@ -60,15 +74,15 @@ export function anchorAttrs(u) {
 }
 
 /** Section heading block: mono index label + title. el.dataset.index is set by site.js. */
-export function head(el, id, lang) {
+function head(el, id, content, lang) {
   const idx = el.dataset.index ? `${el.dataset.index} / ${id}` : id;
-  return `<header class="sec-head"><p class="idx mono">${escapeHtml(idx)}</p><h2 id="${id}-title">${escapeHtml(ui(id, lang))}</h2></header>`;
+  return `<header class="sec-head"><p class="idx mono">${escapeHtml(idx)}</p><h2 id="${id}-title">${escapeHtml(ui(id, lang, content))}</h2></header>`;
 }
 
-export function shell(el, id, lang, bodyHtml) {
+export function shell(el, id, content, lang, bodyHtml) {
   el.className = `sec sec-${id}`;
   el.setAttribute('aria-labelledby', `${id}-title`);
-  el.innerHTML = `<div class="sec-inner">${head(el, id, lang)}<div class="sec-body">${bodyHtml}</div></div>`;
+  el.innerHTML = `<div class="sec-inner">${head(el, id, content, lang)}<div class="sec-body">${bodyHtml}</div></div>`;
 }
 
 const S = 'viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true" focusable="false"';

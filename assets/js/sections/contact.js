@@ -11,8 +11,8 @@ export function render(el, content, lang) {
     const label = linkLabel(l?.kind);
     return `<li><a href="${escapeHtml(href)}"${anchorAttrs(href)} aria-label="${escapeHtml(label)}">${icon(l?.kind)}<span>${escapeHtml(label)}</span></a></li>`;
   }).join('');
-  shell(el, 'contact', lang, `
-    <p class="contact-lead">${escapeHtml(ui('contactLead', lang))}</p>
+  shell(el, 'contact', content, lang, `
+    <p class="contact-lead">${escapeHtml(ui('contactLead', lang, content))}</p>
     ${email ? `<p class="contact-mail"><a href="mailto:${escapeHtml(email)}" aria-label="${escapeHtml(ui('email', lang))}: ${escapeHtml(email)}">${icon('mail')}<span>${escapeHtml(email)}</span></a></p>` : ''}
     ${phone ? `<p class="contact-phone mono"><a href="tel:${escapeHtml(phone.replace(/[^\d+]/g, ''))}">${escapeHtml(ui('phone', lang))} ${escapeHtml(phone)}</a></p>` : ''}
     <ul class="social">${links}</ul>`);

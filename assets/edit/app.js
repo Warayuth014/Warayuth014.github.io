@@ -1,6 +1,6 @@
 // Editor shell: login, draft state, panels, live preview, validation and saving through the Worker.
 // The draft lives in memory and in localStorage ("editor.draft"); the session token only in sessionStorage.
-import { validateSite, validateArticle } from '../../shared/schema.js';
+import { validateSite, validateArticle, SECTION_TITLE_IDS } from '../../shared/schema.js';
 import { renderArticlePage } from '../../shared/render-article.js';
 import { createApi, ApiError } from './api.js';
 import { cleanWorkerUrl, UPLOAD_FILE } from './util.js';
@@ -87,6 +87,15 @@ function ensureShape(site) {
   if (!Array.isArray(site.contact.links)) site.contact.links = [];
   if (site.contact.phone === undefined) site.contact.phone = null;
   o(site, 'resume', { file: null, kind: null });
+  // editable texts: empty means "use the built-in text"
+  o(site, 'ui', {});
+  for (const k of ['tagline', 'contactLead', 'footer']) if (!isObj(site.ui[k])) site.ui[k] = L();
+  o(site.ui, 'sectionTitles', {});
+  for (const id of SECTION_TITLE_IDS) if (!isObj(site.ui.sectionTitles[id])) site.ui.sectionTitles[id] = L();
+  o(site, 'meta', {});
+  for (const k of ['title', 'description']) if (!isObj(site.meta[k])) site.meta[k] = L();
+  o(site, 'resumePage', {});
+  for (const k of ['title', 'comingSoon', 'comingSoonText']) if (!isObj(site.resumePage[k])) site.resumePage[k] = L();
   if (typeof site.workerUrl !== 'string') site.workerUrl = '';
   return site;
 }
@@ -527,8 +536,14 @@ async function save() {
     return;
   }
   document.getElementById('err-summary').hidden = true;
-  const d = diff();
+  let d = diff();
   if (!d.dirty) { setStatus('ยังไม่มีการแก้ไข', ''); return; }
+  // the first save after deploy records the Worker URL in the site config (other devices then find it)
+  const currentUrl = cleanWorkerUrl(workerUrl());
+  if (currentUrl && S.draft.site.workerUrl !== currentUrl) {
+    S.draft.site.workerUrl = currentUrl;
+    d = diff();
+  }
 
   const siteSnapshot = siteJson();
   const sent = d.changedArticles.map((a) => JSON.parse(JSON.stringify(a)));
