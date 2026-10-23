@@ -141,6 +141,7 @@ main { display: block; }
   line-height: 0.98; letter-spacing: -0.03em; font-weight: 700;
   margin-bottom: 1.6rem;
 }
+.hero-name:lang(th) { line-height: 1.35; padding-top: 0.12em; }
 .hero-name .n1, .hero-name .n2 { display: block; }
 .hero-name .n2 {
   color: var(--accent1);

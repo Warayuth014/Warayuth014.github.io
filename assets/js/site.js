@@ -3,7 +3,7 @@
 import { t, detectLang } from '../../shared/i18n.js';
 import { validateSite, SECTION_IDS } from '../../shared/schema.js';
 import { escapeHtml } from '../../shared/sanitize.js';
-import { ui, pad, list } from './sections/_util.js';
+import { ui, pad, list, sameOriginPath } from './sections/_util.js';
 import * as hero from './sections/hero.js';
 import * as about from './sections/about.js';
 import * as projects from './sections/projects.js';
@@ -12,7 +12,7 @@ import * as journey from './sections/journey.js';
 import * as articles from './sections/articles.js';
 import * as contact from './sections/contact.js';
 
-const RENDERERS = { hero, about, projects, skills, journey, articles, contact };
+const RENDERERS = new Map(Object.entries({ hero, about, projects, skills, journey, articles, contact }));
 
 const FONT_PAIRS = {
   default: {
@@ -35,7 +35,7 @@ const FONT_PAIRS = {
   },
 };
 
-const state = { content: null, lang: 'en', preview: false, error: false };
+const state = { content: null, lang: 'en', preview: false, error: false, warned: new Set() };
 let listenerAttached = false;
 
 // ---------- colour helpers (light mode derives its palette from the tokens) ----------
@@ -127,6 +127,7 @@ export function setLang(lang) {
 
 // ---------- rendering ----------
 function renderNav(content, lang, visibleIds) {
+  const home = visibleIds.includes('hero') ? '#hero' : visibleIds[0] ? `#${visibleIds[0]}` : '#';
   const nav = document.getElementById('site-nav');
   if (!nav) return;
   const name = t(content?.hero?.name, lang).trim().split(/\s+/)[0] || 'home';
@@ -134,7 +135,7 @@ function renderNav(content, lang, visibleIds) {
     .map((id) => `<li><a href="#${id}">${escapeHtml(ui(id, lang))}</a></li>`).join('');
   const open = nav.classList.contains('open');
   nav.innerHTML = `
-    <a class="brand mono" href="#hero" aria-label="${escapeHtml(name)}">${escapeHtml(name.toLowerCase())}<span class="cursor" aria-hidden="true">_</span></a>
+    <a class="brand mono" href="${home}" aria-label="${escapeHtml(name)}">${escapeHtml(name.toLowerCase())}<span class="cursor" aria-hidden="true">_</span></a>
     <button class="menu-btn" type="button" aria-expanded="${open}" aria-controls="primary-nav">${escapeHtml(ui('menu', lang))}</button>
     <nav id="primary-nav" aria-label="${escapeHtml(ui('menu', lang))}">
       <ul>${links}<li><a class="nav-resume" href="/resume/">${escapeHtml(ui('resume', lang))}</a></li></ul>
@@ -157,7 +158,7 @@ function renderAll() {
     return;
   }
 
-  const order = list(content.sections).filter((s) => s && s.visible !== false && RENDERERS[s.id]);
+  const order = list(content.sections).filter((s) => s && s.visible !== false && typeof s.id === 'string' && RENDERERS.has(s.id));
   const existing = new Map([...main.querySelectorAll(':scope > section')].map((s) => [s.id, s]));
   main.querySelectorAll(':scope > :not(section)').forEach((n) => n.remove());
   const keep = new Set(order.map((s) => s.id));
@@ -171,7 +172,11 @@ function renderAll() {
     }
     el.dataset.index = pad(i + 1);
     main.appendChild(el); // appendChild also reorders existing nodes
-    RENDERERS[s.id].render(el, content, lang);
+    try {
+      RENDERERS.get(s.id).render(el, content, lang);
+    } catch (e) {
+      if (!state.warned.has(s.id)) { state.warned.add(s.id); console.warn(`section "${s.id}" failed to render: ${e.message}`); }
+    }
   });
 
   renderNav(content, lang, order.map((s) => s.id));
@@ -180,9 +185,7 @@ function renderAll() {
 }
 
 function sameOriginContentUrl() {
-  const p = new URLSearchParams(location.search).get('content');
-  if (p && p.startsWith('/') && !p.startsWith('//') && !p.includes('\\')) return p;
-  return null;
+  return sameOriginPath(new URLSearchParams(location.search).get('content'), location.origin);
 }
 
 async function fetchContent() {
@@ -202,6 +205,7 @@ function attachPreviewListener() {
       boot({ content: d.content, preview: true });
     }
   });
+  if (window.parent !== window) window.parent.postMessage({ type: 'preview-ready' }, location.origin);
 }
 
 function attachUiListeners() {
@@ -209,7 +213,11 @@ function attachUiListeners() {
   document.body.dataset.wired = '1';
   document.addEventListener('click', (ev) => {
     const lang = ev.target.closest?.('.lang-btn');
-    if (lang) { setLang(state.lang === 'th' ? 'en' : 'th'); return; }
+    if (lang) {
+      setLang(state.lang === 'th' ? 'en' : 'th');
+      document.querySelector('.lang-btn')?.focus(); // nav is re-rendered; keep keyboard focus
+      return;
+    }
     const menu = ev.target.closest?.('.menu-btn');
     const nav = document.getElementById('site-nav');
     if (menu && nav) {

@@ -90,3 +90,19 @@ const ICONS = {
 export function icon(name) {
   return ICONS[name] ?? ICONS.dot;
 }
+
+/**
+ * Same-origin guard for the ?content= parameter. Returns "path?query" or null.
+ * Control characters, spaces and backslashes are rejected first (URL parsing would strip
+ * tab/LF/CR and turn "/\t/host" into "//host"), then the resolved origin must match.
+ */
+export function sameOriginPath(p, origin) {
+  if (typeof p !== 'string' || !p.startsWith('/') || /[\u0000-\u0020\u007f\\]/.test(p)) return null;
+  try {
+    const u = new URL(p, origin);
+    if (u.origin !== origin) return null;
+    return u.pathname + u.search;
+  } catch {
+    return null;
+  }
+}
