@@ -12,6 +12,12 @@ import * as journey from './sections/journey.js';
 import * as articles from './sections/articles.js';
 import * as contact from './sections/contact.js';
 import { syncHero, syncThreads } from './hero/mount.js';
+import { enableTilt } from './fx/tilt.js';
+import { enableReveal } from './fx/reveal.js';
+import { enableCursorGlow } from './fx/cursor-glow.js';
+import { enableTimelineProgress } from './fx/timeline.js';
+import { REDUCED_QUERY, COARSE_QUERY } from './fx/env.js';
+import { syncProjectDialog } from './project-dialog.js';
 
 const RENDERERS = new Map(Object.entries({ hero, about, projects, skills, journey, articles, contact }));
 
@@ -126,6 +132,31 @@ export function setLang(lang) {
   renderAll();
 }
 
+// ---------- 2D effects: one registry, disposed before every re-render ----------
+const fx = { disposers: [], watching: false };
+
+function disposeFx() {
+  fx.disposers.splice(0).forEach((d) => { try { d(); } catch { /* already gone */ } });
+}
+
+function enableFx() {
+  disposeFx();
+  const main = document.getElementById('main');
+  if (!main || !state.content) return;
+  try {
+    fx.disposers.push(enableTilt(main), enableReveal(main), enableCursorGlow(), enableTimelineProgress(main));
+  } catch (e) {
+    disposeFx(); // never leave half-hidden content behind
+    console.warn(`effects failed: ${e.message}`);
+  }
+}
+
+function watchFxPreferences() {
+  if (fx.watching || typeof matchMedia !== 'function') return;
+  fx.watching = true;
+  for (const q of [REDUCED_QUERY, COARSE_QUERY]) matchMedia(q).addEventListener?.('change', enableFx);
+}
+
 // ---------- rendering ----------
 function renderNav(content, lang, visibleIds) {
   const home = visibleIds.includes('hero') ? '#hero' : visibleIds[0] ? `#${visibleIds[0]}` : '#';
@@ -148,6 +179,7 @@ function renderAll() {
   const main = document.getElementById('main');
   if (!main) return;
   const { content, lang } = state;
+  disposeFx();
   document.documentElement.lang = lang;
 
   const skip = document.querySelector('.skip-link');
@@ -183,6 +215,13 @@ function renderAll() {
   renderNav(content, lang, order.map((s) => s.id));
   const name = t(content.hero?.name, lang).trim();
   document.title = name ? `${name} | ${ui('heroTag', lang)}` : document.title;
+  watchFxPreferences();
+  enableFx();
+  try {
+    syncProjectDialog(content, lang);
+  } catch (e) {
+    console.warn(`project dialog failed: ${e.message}`);
+  }
 }
 
 function sameOriginContentUrl() {

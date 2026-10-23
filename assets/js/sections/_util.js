@@ -13,6 +13,8 @@ const UI = {
   demo: { th: 'ดูเดโม', en: 'Live demo' },
   repo: { th: 'ซอร์สโค้ด', en: 'Source code' },
   noLink: { th: 'ยังไม่เปิดให้ดู', en: 'no public link yet' },
+  privateProject: { th: 'โปรเจกต์ส่วนตัว ยังไม่มีลิงก์ให้เปิดดู', en: 'Private project, no public link yet' },
+  close: { th: 'ปิด', en: 'Close' },
   photo: { th: 'รูปโปรไฟล์ เร็ว ๆ นี้', en: 'photo coming soon' },
   email: { th: 'อีเมล', en: 'Email' },
   phone: { th: 'โทร', en: 'Phone' },

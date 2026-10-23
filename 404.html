@@ -5,15 +5,29 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>404 | ไม่พบหน้านี้ / Page not found</title>
   <meta name="robots" content="noindex">
+  <meta name="theme-color" content="#0b0f1d">
   <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns=%27http://www.w3.org/2000/svg%27 viewBox=%270 0 32 32%27%3E%3Crect width=%2732%27 height=%2732%27 rx=%268%27 fill=%27%230b0f1d%27/%3E%3Ctext x=%2716%27 y=%2723%27 font-size=%2720%27 font-family=%27monospace%27 font-weight=%27700%27 text-anchor=%27middle%27 fill=%27%237cf3ff%27%3Ew_%3C/text%3E%3C/svg%3E">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap">
   <link rel="stylesheet" href="/assets/css/site.css">
+  <style>
+    html:lang(th) [lang="en"], html:lang(en) [lang="th"] { display: none; }
+  </style>
+  <script type="module">
+    import { detectLang } from '/shared/i18n.js';
+    const lang = detectLang();
+    document.documentElement.lang = lang;
+    document.title = lang === 'th' ? '404 | ไม่พบหน้านี้' : '404 | Page not found';
+  </script>
 </head>
 <body class="page-404">
   <main class="nf">
     <p class="idx mono">404 / not-found</p>
-    <h1>ไม่พบหน้านี้<br><span>Page not found</span></h1>
-    <p>ลิงก์อาจพิมพ์ผิดหรือหน้านี้ถูกย้ายไปแล้ว<br>The link may be mistyped or the page has moved.</p>
-    <p><a class="btn btn-primary" href="/">กลับหน้าแรก / Back home</a></p>
+    <h1><span lang="th">ไม่พบหน้านี้</span><span lang="en">Page not found</span></h1>
+    <p lang="th">ลิงก์อาจพิมพ์ผิดหรือหน้านี้ถูกย้ายไปแล้ว</p>
+    <p lang="en">The link may be mistyped or the page has moved.</p>
+    <p><a class="btn btn-primary" href="/"><span lang="th">กลับหน้าแรก</span><span lang="en">Back home</span></a></p>
   </main>
 </body>
 </html>
