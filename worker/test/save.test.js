@@ -170,3 +170,56 @@ test('GitHub requests carry the required headers and token only in Authorization
   assert.ok(c.headers['User-Agent']);
   assert.match(c.headers.Authorization, /^Bearer /);
 });
+
+test('a save with 30 existing articles uses at most 10 GitHub subrequests (does not grow with article count)', async () => {
+  const slugs = Array.from({ length: 30 }, (_, i) => `post-${String(i).padStart(2, '0')}`);
+  const e = await setup();
+  let head = (await state(e)).json.headSha;
+  assert.equal((await save(e, { baseSha: head, site: site(), articles: slugs.map((s) => article(s)) })).status, 200);
+  head = e.gh.head;
+  const before = e.gh.calls.length;
+  const r = await save(e, { baseSha: head, articles: [article('post-07', { body: { th: '<p>edited</p>', en: '<p>edited</p>' } })] });
+  assert.equal(r.status, 200);
+  const used = e.gh.calls.length - before;
+  assert.ok(used <= 10, `used ${used} subrequests`);
+  assert.equal(e.gh.calls.slice(before).filter((c) => c.path === '/graphql').length, 1);
+  assert.equal(e.gh.calls.slice(before).filter((c) => c.method === 'GET' && c.path.startsWith('/git/blobs')).length, 0, 'no per-file reads');
+  assert.match(e.gh.text('articles/post-07/index.html'), /edited/);
+});
+
+test('saving identical content makes no commit', async () => {
+  const e = await setup();
+  let head = (await state(e)).json.headSha;
+  await save(e, { baseSha: head, site: site(), articles: [article('a')] });
+  head = e.gh.head;
+  const r = await save(e, { baseSha: head, site: site(), articles: [article('a')] });
+  assert.equal(r.status, 200);
+  assert.equal(r.json.commitSha, head);
+  assert.equal(e.gh.commitCount(), 1);
+});
+
+test('reserved slug "index" is refused for saving and deleting (400, no writes)', async () => {
+  const e = await setup();
+  const head = (await state(e)).json.headSha;
+  const a = await save(e, { baseSha: head, articles: [article('index')] });
+  assert.equal(a.status, 400);
+  assert.match(a.json.errors.join('\n'), /reserved/);
+  assert.equal((await save(e, { baseSha: head, deleteArticles: ['index'] })).status, 400);
+  assert.equal(e.gh.writes().length, 0);
+});
+
+test('a page is "generated" if its article JSON exists or the old index.json listed it; otherwise it is protected', async () => {
+  const files = {
+    ...repoFiles(),
+    'content/articles/index.json': JSON.stringify([{ slug: 'was-listed' }]),
+    'articles/was-listed/index.html': '<p>old generated</p>',
+    'articles/with-json/index.html': '<p>old generated</p>',
+    'content/articles/with-json.json': JSON.stringify(article('with-json', { published: false })),
+    'articles/index.html': '<p>old list</p>',
+  };
+  const e = await setup(files);
+  const head = (await state(e)).json.headSha;
+  assert.equal((await save(e, { baseSha: head, articles: [article('fresh')] })).status, 200);
+  assert.equal(e.gh.text('articles/was-listed/index.html'), undefined, 'listed page removed (no article any more)');
+  assert.equal(e.gh.text('articles/with-json/index.html'), undefined, 'draft page removed');
+});

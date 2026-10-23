@@ -2,8 +2,9 @@
 import { createHash } from 'node:crypto';
 import worker from '../src/index.js';
 import { hashPassword } from '../src/auth.js';
+import { LoginGuard } from '../src/loginguard.js';
 
-export const TOKEN_SECRET = 'ghp_SECRET_TOKEN_VALUE_123';
+export const TOKEN_SECRET = 'FAKE-GH-TOKEN-for-tests-123';
 export const ORIGIN = 'https://warayuth014.github.io';
 export const PIN = '123456';
 
@@ -37,7 +38,7 @@ export function fakeGitHub(initial = {}, { failRefPatch = 0, failAll = false } =
   const commits = new Map(); // sha -> {tree, parents}
   const calls = [];
   let n = 0;
-  const addBlob = (buf) => { const sha = gitSha(`blob${n += 1}${buf.toString('base64')}`); blobs.set(sha, buf); return sha; };
+  const addBlob = (buf) => { const sha = createHash('sha1').update(Buffer.concat([Buffer.from(`blob ${buf.length}\0`), buf])).digest('hex'); blobs.set(sha, buf); return sha; };
   const addTree = (map) => { const sha = gitSha(`tree${n += 1}`); trees.set(sha, map); return sha; };
   const addCommit = (tree, parents) => { const sha = gitSha(`commit${n += 1}`); commits.set(sha, { tree, parents }); return sha; };
 
@@ -57,7 +58,15 @@ export function fakeGitHub(initial = {}, { failRefPatch = 0, failAll = false } =
     if (method === 'GET' && (m = /^\/git\/trees\/(.+)$/.exec(path))) {
       return out(200, { truncated: false, tree: [...trees.get(m[1])].map(([p, sha]) => ({ path: p, type: 'blob', sha })) });
     }
-    if (method === 'GET' && (m = /^\/git\/blobs\/(.+)$/.exec(path))) return out(200, { content: blobs.get(m[1]).toString('base64'), encoding: 'base64' });
+    if (method === 'POST' && path === '/graphql') {
+      const [commitSha, dir] = body.variables.arts.split(':');
+      const tree = trees.get(commits.get(commitSha).tree);
+      const text = (sha) => ({ text: blobs.get(sha).toString('utf8'), isTruncated: false });
+      const entries = [...tree].filter(([p]) => p.startsWith(`${dir}/`) && !p.slice(dir.length + 1).includes('/'))
+        .map(([p, sha]) => ({ name: p.slice(dir.length + 1), type: 'blob', object: text(sha) }));
+      const siteSha = tree.get(body.variables.site.split(':')[1]);
+      return out(200, { data: { repository: { articles: { entries }, site: siteSha ? text(siteSha) : null } } });
+    }
     if (method === 'POST' && path === '/git/blobs') return out(201, { sha: addBlob(Buffer.from(body.content, 'base64')) });
     if (method === 'POST' && path === '/git/trees') {
       const next = new Map(trees.get(body.base_tree));
@@ -83,8 +92,45 @@ export function fakeGitHub(initial = {}, { failRefPatch = 0, failAll = false } =
     files() { return new Map([...trees.get(commits.get(state.head).tree)].map(([p, s]) => [p, blobs.get(s)])); },
     text(p) { return this.files().get(p)?.toString('utf8'); },
     commitCount() { return calls.filter((c) => c.method === 'POST' && c.path === '/git/commits').length; },
-    writes() { return calls.filter((c) => c.method !== 'GET'); },
+    writes() { return calls.filter((c) => c.method !== 'GET' && c.path !== '/graphql'); },
   };
+}
+
+/** In-memory stand-in for DO storage (the subset LoginGuard uses). Every op yields, so races would show. */
+export function fakeStorage() {
+  const m = new Map();
+  const tick = () => new Promise((r) => setImmediate(r));
+  const clone = (v) => (v === undefined ? v : structuredClone(v));
+  return {
+    async get(k) { await tick(); return clone(m.get(k)); },
+    async put(k, v) { await tick(); m.set(k, clone(v)); },
+    async delete(k) { await tick(); for (const x of Array.isArray(k) ? k : [k]) m.delete(x); },
+    async deleteAll() { await tick(); m.clear(); },
+    async list({ prefix = '' } = {}) { await tick(); return new Map([...m].filter(([k]) => k.startsWith(prefix)).map(([k, v]) => [k, clone(v)])); },
+    size: () => m.size,
+  };
+}
+
+/** Fake DurableObjectNamespace with one LoginGuard instance; counts reservations that were let through. */
+export function fakeGuardNamespace() {
+  const storage = fakeStorage();
+  const guard = new LoginGuard({ storage });
+  const ns = {
+    storage,
+    allowed: 0,
+    idFromName: (n) => n,
+    get: () => ({
+      async fetch(url, init) {
+        const res = await guard.fetch(new Request(url, init));
+        if (new URL(url).pathname === '/attempt') {
+          const clone = res.clone();
+          if ((await clone.json()).locked === false) ns.allowed += 1;
+        }
+        return res;
+      },
+    }),
+  };
+  return ns;
 }
 
 export async function makeEnv({ files = {}, ghOpts = {}, withPassword = true } = {}) {
@@ -94,6 +140,7 @@ export async function makeEnv({ files = {}, ghOpts = {}, withPassword = true } =
   if (withPassword) await kv.put('pw:hash', await hashPassword(PIN, 1000)); // low iterations: test speed
   const gh = fakeGitHub(files, ghOpts);
   const env = {
+    LOGIN_GUARD: fakeGuardNamespace(),
     STATE: kv, REPO: 'Warayuth014/Warayuth014.github.io', BRANCH: 'main', ALLOWED_ORIGINS: ORIGIN,
     GITHUB_TOKEN: TOKEN_SECRET, SESSION_SECRET: 'test-session-secret', GITHUB_FETCH: gh.fetch, NOW: now,
   };

@@ -3,6 +3,8 @@
 import { GitHubError } from './github.js';
 import * as routes from './routes.js';
 
+export { LoginGuard } from './loginguard.js'; // Durable Object class must be exported from the entry module
+
 const STATIC_HEADERS = { 'Cache-Control': 'no-store', 'X-Content-Type-Options': 'nosniff' };
 
 /** Exact origin match (parsed, not substring): ALLOWED_ORIGINS plus http://localhost:* and http://127.0.0.1:* */

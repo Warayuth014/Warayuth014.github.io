@@ -13,10 +13,14 @@ export class GitHubError extends Error {
 }
 
 const utf8ToB64 = (text) => toB64(new TextEncoder().encode(text));
-const b64ToUtf8 = (b64) => {
-  const bin = atob(b64.replace(/\s/g, ''));
-  return new TextDecoder().decode(Uint8Array.from(bin, (c) => c.charCodeAt(0)));
-};
+
+// One request reads every article file and site.json at a commit (subrequests must not grow with article count).
+const CONTENT_QUERY = `query($owner:String!,$name:String!,$arts:String!,$site:String!){
+  repository(owner:$owner,name:$name){
+    articles: object(expression:$arts){ ... on Tree { entries { name type object { ... on Blob { text isTruncated } } } } }
+    site: object(expression:$site){ ... on Blob { text isTruncated } }
+  }
+}`;
 
 export function githubClient(env) {
   const doFetch = env.GITHUB_FETCH ?? ((...a) => globalThis.fetch(...a));
@@ -26,7 +30,7 @@ export function githubClient(env) {
   async function call(method, path, body) {
     let res;
     try {
-      res = await doFetch(`${base}${path}`, {
+      res = await doFetch(path.startsWith('https://') ? path : `${base}${path}`, {
         method,
         headers: {
           Authorization: `Bearer ${env.GITHUB_TOKEN}`,
@@ -58,9 +62,23 @@ export function githubClient(env) {
       if (tree.truncated) throw new GitHubError(502);
       return new Map((tree.tree ?? []).filter((e) => e.type === 'blob').map((e) => [e.path, e.sha]));
     },
-    async getText(blobSha) {
-      const blob = await call('GET', `/git/blobs/${blobSha}`);
-      return b64ToUtf8(blob.content ?? '');
+    /**
+     * { site: string|null, articles: [{name, text}] } at commit `commitSha` via ONE GraphQL request.
+     * `articles` holds every file directly in content/articles (index.json included).
+     * Fails closed (GitHubError) if any text came back truncated or GraphQL reported errors.
+     */
+    async getContent(commitSha) {
+      const [owner, name] = String(env.REPO).split('/');
+      const data = await call('POST', `${API}/graphql`, {
+        query: CONTENT_QUERY,
+        variables: { owner, name, arts: `${commitSha}:content/articles`, site: `${commitSha}:content/site.json` },
+      });
+      const repo = data?.data?.repository;
+      if (!repo || data.errors) throw new GitHubError(502);
+      const entries = (repo.articles?.entries ?? []).filter((e) => e.type === 'blob');
+      if (entries.some((e) => !e.object || e.object.isTruncated || typeof e.object.text !== 'string')) throw new GitHubError(502);
+      if (repo.site && (repo.site.isTruncated || typeof repo.site.text !== 'string')) throw new GitHubError(502);
+      return { site: repo.site?.text ?? null, articles: entries.map((e) => ({ name: e.name, text: e.object.text })) };
     },
     /**
      * One commit on top of `head`: changes = [{path, text} | {path, base64} | {path, delete: true}].

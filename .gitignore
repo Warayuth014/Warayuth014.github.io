@@ -1,3 +1,5 @@
 .superpowers/
 node_modules/
 .wrangler/
+.dev.vars*
+worker/.dev.vars*

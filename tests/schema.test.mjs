@@ -137,6 +137,7 @@ test('article: slug, date, cover, published, tags, body', () => {
   const bad = (mut, path) => { const a = article(); mut(a); has(validateArticle(a), path); };
   bad((a) => { a.slug = 'Bad Slug'; }, 'slug');
   bad((a) => { a.slug = 'x'.repeat(61); }, 'slug');
+  bad((a) => { a.slug = 'index'; }, 'slug: "index" is reserved');
   bad((a) => { a.date = '2026-13-45'; }, 'date');
   bad((a) => { a.date = '23/10/2026'; }, 'date');
   bad((a) => { a.cover = 'https://x.y/c.png'; }, 'cover');

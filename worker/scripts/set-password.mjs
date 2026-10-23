@@ -1,16 +1,16 @@
 #!/usr/bin/env node
-// Usage (run inside worker/):
-//   node scripts/set-password.mjs [--local|--remote]            set the editor PIN (default --remote)
-//   node scripts/set-password.mjs --reset-locks [--ip 1.2.3.4]  clear the lockout counters (--local|--remote too)
+// Usage (run inside worker/); add --local to work on the local dev store, default is the real one (--remote):
+//   node scripts/set-password.mjs               set the editor PIN
+//   node scripts/set-password.mjs --revoke      log out every open session (new pw:ver)
+//   node scripts/set-password.mjs --reset-locks clear all login lockouts (new locks:epoch)
 // The PIN is read from the NEW_PASSWORD environment variable, or typed at a prompt when it is unset.
-// The PIN is never printed. Only the salted PBKDF2 hash goes to KV (key pw:hash); pw:ver is left alone
-// (changing the PIN with this script does not log out an open session; use /password in the editor for that).
+// The PIN is never printed. Only the salted PBKDF2 hash goes to KV (key pw:hash). Setting a PIN does not
+// log anyone out; combine it with --revoke for that.
 import { spawnSync } from 'node:child_process';
 import { existsSync } from 'node:fs';
 import { createInterface } from 'node:readline/promises';
 import { fileURLToPath } from 'node:url';
 import { hashPassword } from '../src/auth.js';
-import { globalKey, ipKey } from '../src/ratelimit.js';
 
 const args = process.argv.slice(2);
 const flag = (n) => args.includes(n);
@@ -18,26 +18,27 @@ const mode = flag('--local') ? '--local' : '--remote';
 const wrangler = fileURLToPath(new URL('../node_modules/wrangler/bin/wrangler.js', import.meta.url));
 const cwd = fileURLToPath(new URL('..', import.meta.url));
 
-function kv(...sub) {
+function kvPut(key, value) {
   if (!existsSync(wrangler)) {
     console.error('wrangler is not installed yet. Run "npm install" inside the worker folder first.');
     process.exit(1);
   }
-  // No shell: the hash contains "$" characters that a shell would mangle.
-  const r = spawnSync(process.execPath, [wrangler, 'kv', 'key', ...sub, '--binding=STATE', mode], { cwd, stdio: 'inherit' });
+  // No shell: the hash contains "$" characters that a shell would mangle. stdout is dropped so the
+  // stored value is not echoed; wrangler's errors still show (stderr).
+  const r = spawnSync(process.execPath, [wrangler, 'kv', 'key', 'put', key, value, '--binding=STATE', mode], { cwd, stdio: ['inherit', 'ignore', 'inherit'] });
   if (r.status !== 0) process.exit(r.status ?? 1);
 }
 
 async function main() {
   if (flag('--reset-locks')) {
-    kv('delete', globalKey(Date.now()));
-    const i = args.indexOf('--ip');
-    if (i !== -1) {
-      const ip = args[i + 1];
-      if (!ip || ip.startsWith('--')) throw new Error('--ip needs an address, e.g. --ip 203.0.113.7');
-      kv('delete', ipKey(ip));
-    }
-    console.log('locks cleared');
+    // The Worker hands this marker to the LoginGuard, which clears its counters when it changes.
+    kvPut('locks:epoch', String(Date.now()));
+    console.log(`locks cleared (${mode.slice(2)})`);
+    return;
+  }
+  if (flag('--revoke')) {
+    kvPut('pw:ver', String(Date.now())); // any change of pw:ver invalidates every signed session
+    console.log(`all sessions revoked (${mode.slice(2)})`);
     return;
   }
 
@@ -48,7 +49,7 @@ async function main() {
     rl.close();
   }
   if (typeof pin !== 'string' || pin.length < 6 || pin.length > 128) throw new Error('The PIN must be 6 to 128 characters.');
-  kv('put', 'pw:hash', await hashPassword(pin));
+  kvPut('pw:hash', await hashPassword(pin));
   console.log(`password hash stored (${mode.slice(2)})`);
 }
 

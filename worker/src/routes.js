@@ -2,9 +2,8 @@
 // for GitHub failures (index.js maps them to 502). Handlers never see or return secrets.
 import { validateSite, validateArticle } from '../../shared/schema.js';
 import { planArticles } from '../../shared/build-articles.js';
-import { GENERATED_MARKER } from '../../shared/render-article.js';
 import { hashPassword, verifyPassword, signSession, verifySession, fromB64 } from './auth.js';
-import { checkLocked, recordFailure, clientIp } from './ratelimit.js';
+import { reserveAttempt, releaseAttempt, clientIp } from './ratelimit.js';
 import { githubClient, GitHubError } from './github.js';
 
 export const STALE_MESSAGE = 'มีคนบันทึกก่อนหน้า กดโหลดใหม่';
@@ -38,21 +37,36 @@ async function currentVer(env) {
   return (await env.STATE.get('pw:ver')) ?? '1';
 }
 
+/** pw:ver + 1; anything that is not a number counts as 1 */
+async function nextVer(env) {
+  const n = Number(await currentVer(env));
+  return String((Number.isFinite(n) ? n : 1) + 1);
+}
+
 export async function isAuthed(ctx) {
   const m = /^Bearer (.+)$/.exec(ctx.request.headers.get('Authorization') ?? '');
   if (!m || !ctx.env.SESSION_SECRET) return false;
   return verifySession(ctx.env.SESSION_SECRET, m[1], await currentVer(ctx.env), ctx.now());
 }
 
-/** Shared by /login and /password: lock check, then password check, failures counted. Returns a response on refusal, else null. */
+/**
+ * Shared by /login and /password. The attempt is reserved in the LoginGuard Durable Object BEFORE the
+ * slow check (so parallel guesses are counted), and released again when the password is right.
+ * Returns a response on refusal, else null.
+ */
 async function checkPassword(ctx, password) {
   const ip = clientIp(ctx.request);
-  const lock = await checkLocked(ctx.env.STATE, ip, ctx.now());
+  const lock = await reserveAttempt(ctx.env, ip, ctx.now());
   if (lock.locked) return reply(429, { error: 'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่', retryAfter: lock.retryAfter });
   const stored = await ctx.env.STATE.get('pw:hash');
-  if (!stored) return reply(503, { error: 'ยังไม่ได้ตั้งรหัสผ่าน (ดู worker/README.th.md)' });
-  if (typeof password === 'string' && password.length > 0 && password.length <= 128 && (await verifyPassword(password, stored))) return null;
-  await recordFailure(ctx.env.STATE, ip, ctx.now());
+  if (!stored) {
+    await releaseAttempt(ctx.env, ip, ctx.now());
+    return reply(503, { error: 'ยังไม่ได้ตั้งรหัสผ่าน (ดู worker/README.th.md)' });
+  }
+  if (typeof password === 'string' && password.length > 0 && password.length <= 128 && (await verifyPassword(password, stored))) {
+    await releaseAttempt(ctx.env, ip, ctx.now());
+    return null;
+  }
   return reply(401, { error: BAD_PASSWORD });
 }
 
@@ -72,37 +86,48 @@ export async function changePassword(ctx) {
   const next = ctx.body?.next;
   if (typeof next !== 'string' || next.length < 6 || next.length > 128) return bad('รหัสใหม่ต้องยาว 6 ถึง 128 ตัวอักษร');
   await ctx.env.STATE.put('pw:hash', await hashPassword(next));
-  await ctx.env.STATE.put('pw:ver', String(Number(await currentVer(ctx.env)) + 1)); // every older session stops working
+  await ctx.env.STATE.put('pw:ver', await nextVer(ctx.env)); // every older session stops working
   return reply(200, await newSession(ctx));
 }
 
 // ---- repo reads ---------------------------------------------------------------------------------
 
-const articleFile = /^content\/articles\/([^/]+)\.json$/;
-
-async function readJson(gh, files, path) {
-  const sha = files.get(path);
-  if (!sha) return null;
+const tryParse = (text) => {
   try {
-    return JSON.parse(await gh.getText(sha));
-  } catch (e) {
-    if (e instanceof GitHubError) throw e;
+    return JSON.parse(text);
+  } catch {
     return undefined; // present but not valid JSON
   }
-}
+};
 
-async function readArticles(gh, files) {
-  const names = [...files.keys()].filter((p) => articleFile.test(p) && p !== 'content/articles/index.json').sort();
-  return Promise.all(names.map(async (p) => ({ file: p.slice('content/articles/'.length), article: await readJson(gh, files, p) })));
+/** Everything a save or /state needs from the repo at the head: 2 subrequests (tree listing + one GraphQL read). */
+async function readRepo(gh, head) {
+  const [files, content] = await Promise.all([gh.getFiles(head.treeSha), gh.getContent(head.commitSha)]);
+  const site = content.site === null ? null : tryParse(content.site);
+  const entries = content.articles
+    .filter((f) => f.name.endsWith('.json') && f.name !== 'index.json')
+    .sort((x, y) => (x.name < y.name ? -1 : 1))
+    .map((f) => ({ file: f.name, article: tryParse(f.text) }));
+  const prev = tryParse(content.articles.find((f) => f.name === 'index.json')?.text ?? '[]');
+  const indexedSlugs = new Set(Array.isArray(prev) ? prev.map((x) => x?.slug) : []);
+  return { files, site, entries, indexedSlugs };
 }
 
 export async function state(ctx) {
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
-  const files = await gh.getFiles(head.treeSha);
-  const site = await readJson(gh, files, 'content/site.json');
-  const entries = await readArticles(gh, files);
-  return reply(200, { headSha: head.commitSha, site, articles: entries.map((e) => e.article).filter(isObj) });
+  const { site, entries } = await readRepo(gh, head);
+  return reply(200, { headSha: head.commitSha, site: site ?? null, articles: entries.map((e) => e.article).filter(isObj) });
+}
+
+/** git's blob id of a text, so unchanged files can be skipped without reading them back */
+async function gitBlobSha(text) {
+  const body = new TextEncoder().encode(text);
+  const head = new TextEncoder().encode(`blob ${body.length}${String.fromCharCode(0)}`);
+  const all = new Uint8Array(head.length + body.length);
+  all.set(head);
+  all.set(body, head.length);
+  return [...new Uint8Array(await crypto.subtle.digest('SHA-1', all))].map((x) => x.toString(16).padStart(2, '0')).join('');
 }
 
 // ---- save ---------------------------------------------------------------------------------------
@@ -143,7 +168,7 @@ export async function save(ctx) {
   if (!Array.isArray(del) || del.length > 200) errors.push('deleteArticles: must be a list of slugs');
   else {
     del.forEach((s, i) => {
-      if (typeof s !== 'string' || !SLUG.test(s)) errors.push(`deleteArticles[${i}]: must match a-z, 0-9, - (1-60 characters)`);
+      if (typeof s !== 'string' || !SLUG.test(s) || s === 'index') errors.push(`deleteArticles[${i}]: must match a-z, 0-9, - (1-60 characters)`);
       else if (payloadSlugs.has(s)) errors.push(`deleteArticles[${i}]: "${s}" is also being saved`);
     });
   }
@@ -153,42 +178,48 @@ export async function save(ctx) {
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
   if (head.commitSha !== b.baseSha) return reply(409, { error: STALE_MESSAGE });
-  const files = await gh.getFiles(head.treeSha);
+  const repo = await readRepo(gh, head);
+  const { files } = repo;
 
-  const site = b.site ?? (await readJson(gh, files, 'content/site.json'));
+  const site = b.site ?? repo.site;
   if (!isObj(site)) return reply(400, { errors: ['content/site.json: missing or not valid JSON'] });
 
-  const repoEntries = (await readArticles(gh, files)).filter((e) => {
-    const slug = e.file.replace(/\.json$/, '');
-    return !payloadSlugs.has(slug) && !deleteSlugs.has(slug);
-  });
   const entries = [
-    ...repoEntries.map((e) => (e.article === undefined ? { file: e.file, article: null } : e)),
+    ...repo.entries.filter((e) => {
+      const slug = e.file.replace(/\.json$/, '');
+      return !payloadSlugs.has(slug) && !deleteSlugs.has(slug);
+    }),
     ...payload.map((a) => ({ file: `${a.slug}.json`, article: a })),
   ];
 
-  // which generated pages already exist (and whether the generator made them)
+  // Which pages exist is decided from the tree listing, never by reading page bodies: an existing
+  // articles/<slug>/index.html counts as generated when its article JSON exists at the head or the
+  // previous index.json lists it; anything else is a hand-made page and is never overwritten.
   const pageRe = /^articles\/([^/]+)\/index\.html$/;
   const pages = {};
-  await Promise.all([...files].filter(([p]) => pageRe.test(p)).map(async ([p, sha]) => {
-    pages[pageRe.exec(p)[1]] = (await gh.getText(sha)).includes(GENERATED_MARKER);
-  }));
-  const listSha = files.get('articles/index.html');
-  const list = listSha ? (await gh.getText(listSha)).includes(GENERATED_MARKER) : null;
+  for (const p of files.keys()) {
+    const m = pageRe.exec(p);
+    if (m) pages[m[1]] = files.has(`content/articles/${m[1]}.json`) || repo.indexedSlugs.has(m[1]);
+  }
+  const list = files.has('articles/index.html') ? files.has('content/articles/index.json') : null;
 
   const plan = planArticles(site, entries, { pages, list });
   if (plan.errors.length) return reply(400, { errors: plan.errors });
 
-  const changes = [];
-  if (b.site !== undefined) changes.push({ path: 'content/site.json', text: json(b.site) });
-  for (const a of payload) changes.push({ path: `content/articles/${a.slug}.json`, text: json(a) });
-  for (const [path, text] of Object.entries(plan.files)) changes.push({ path, text });
+  const wanted = [];
+  if (b.site !== undefined) wanted.push({ path: 'content/site.json', text: json(b.site) });
+  for (const a of payload) wanted.push({ path: `content/articles/${a.slug}.json`, text: json(a) });
+  for (const [path, text] of Object.entries(plan.files)) wanted.push({ path, text });
   const deletions = [...plan.deletePaths];
-  for (const slug of deleteSlugs) if (files.has(`content/articles/${slug}.json`)) deletions.push(`content/articles/${slug}.json`);
-  for (const path of deletions) changes.push({ path, delete: true });
+  for (const slug of deleteSlugs) deletions.push(`content/articles/${slug}.json`);
 
-  const bad1 = changes.find((c) => !pathAllowed(c.path));
-  if (bad1) return bad('ไม่อนุญาตให้เขียนไฟล์นอก content/ uploads/ articles/');
+  // only what actually changes goes into the commit (keeps subrequests small)
+  const changes = [];
+  for (const w of wanted) if (files.get(w.path) !== (await gitBlobSha(w.text))) changes.push(w);
+  for (const path of deletions) if (files.has(path)) changes.push({ path, delete: true });
+
+  if (changes.some((c) => !pathAllowed(c.path))) return bad('ไม่อนุญาตให้เขียนไฟล์นอก content/ uploads/ articles/');
+  if (changes.length === 0) return reply(200, { commitSha: head.commitSha });
 
   const message = commitMessage({ site: b.site !== undefined, articles: payload.map((a) => a.slug), deleted: [...deleteSlugs] });
   try {

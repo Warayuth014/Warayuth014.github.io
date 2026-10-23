@@ -198,6 +198,7 @@ export function validateArticle(a) {
   if (!isObj(a)) return { ok: false, errors: ['(root): must be an object'] };
 
   if (typeof a.slug !== 'string' || !/^[a-z0-9-]{1,60}$/.test(a.slug)) err('slug', 'must match a-z, 0-9, - (1-60 characters)');
+  else if (a.slug === 'index') err('slug', '"index" is reserved (content/articles/index.json is the generated list)');
   L(a.title, 'title', MAX_TITLE, { atLeastOne: true });
   L(a.summary, 'summary', MAX_TEXT);
   if (obj(a.body, 'body')) {
