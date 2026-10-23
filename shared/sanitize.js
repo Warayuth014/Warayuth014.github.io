@@ -77,13 +77,15 @@ function openTag(name, attrs) {
   return `<${name}>`;
 }
 
-const TAG_RE = /^<(\/?)([a-zA-Z][a-zA-Z0-9]*)((?:"[^"]*"|'[^']*'|[^>"'])*)>/;
+// Sticky + bounded attribute run: linear work per "<", no slicing of the remaining input.
+const TAG_RE = /<(\/?)([a-zA-Z][a-zA-Z0-9]*)((?:"[^"]*"|'[^']*'|[^>"']){0,2000})>/y;
 
 export function sanitizeRichText(html) {
   if (typeof html !== 'string') return '';
   let out = '';
   const stack = [];
   let i = 0;
+  const lastGt = html.lastIndexOf('>');
   while (i < html.length) {
     const lt = html.indexOf('<', i);
     if (lt === -1) { out += escapeText(html.slice(i)); break; }
@@ -95,7 +97,8 @@ export function sanitizeRichText(html) {
       i = end === -1 ? html.length : end + 3;
       continue;
     }
-    const m = TAG_RE.exec(html.slice(i));
+    TAG_RE.lastIndex = i;
+    const m = i < lastGt ? TAG_RE.exec(html) : null;
     if (!m) {
       // Not a tag (e.g. "1 < 2" or unterminated "<p title=..."): literal text.
       out += '&lt;';
@@ -107,12 +110,12 @@ export function sanitizeRichText(html) {
     const name = m[2].toLowerCase();
 
     if (!closing && DROP_CONTENT.has(name)) {
-      const close = new RegExp(`</${name}[\s/>]`, 'i');
-      const rest = html.slice(i);
-      const cm = close.exec(rest);
+      const close = new RegExp(`</${name}(?=[\\s/>])`, 'gi');
+      close.lastIndex = i;
+      const cm = close.exec(html);
       if (!cm) { i = html.length; continue; }
-      const gt = rest.indexOf('>', cm.index);
-      i += gt === -1 ? rest.length : gt + 1;
+      const gt = html.indexOf('>', cm.index);
+      i = gt === -1 ? html.length : gt + 1;
       continue;
     }
     if (DROP_VOID.has(name) || !ALLOWED.has(name)) continue;

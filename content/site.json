@@ -147,12 +147,12 @@
     },
     {
       "when": { "th": "ม.ค. – เม.ย. 2025", "en": "Jan – Apr 2025" },
-      "title": { "th": "งานพัฒนาซอฟต์แวร์", "en": "Software development" },
+      "title": { "th": "Backend developer (.NET)", "en": "Backend developer (.NET)" },
       "place": { "th": "Jupiter Software", "en": "Jupiter Software" }
     },
     {
       "when": { "th": "ก.ย. 2025 – ปัจจุบัน", "en": "Sep 2025 – present" },
-      "title": { "th": "งานพัฒนาซอฟต์แวร์", "en": "Software development" },
+      "title": { "th": "Full-stack developer (Flutter และ .NET)", "en": "Full-stack developer (Flutter & .NET)" },
       "place": { "th": "ACETEC Technology", "en": "ACETEC Technology" }
     }
   ],

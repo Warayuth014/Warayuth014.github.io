@@ -65,3 +65,24 @@ test('non-string input yields empty string', () => {
   assert.equal(s(undefined), '');
   assert.equal(s(42), '');
 });
+
+test('script close tag may have whitespace before ">"; "</scripts>" does not close', () => {
+  assert.equal(s('a<script>x</script >b<p>after</p>'), 'ab<p>after</p>');
+  assert.equal(s('a<script>x</script\n>b<p>after</p>'), 'ab<p>after</p>');
+  assert.equal(s('a<script>x</scripts>y</script>b'), 'ab');
+  assert.equal(s('a<script>x</scripts>y'), 'a');
+});
+
+test('pathological input sanitizes in linear time', () => {
+  for (const unit of ['<a ', '<a "', '<script>', '<!-', "<a '", '<p title="']) {
+    const input = unit.repeat(Math.ceil(100000 / unit.length)) + '>';
+    const t0 = performance.now();
+    s(input);
+    const ms = performance.now() - t0;
+    assert.ok(ms < 500, `${JSON.stringify(unit)} took ${Math.round(ms)} ms`);
+  }
+  const closed = '<script>x</script>'.repeat(6000);
+  const t0 = performance.now();
+  assert.equal(s(closed), '');
+  assert.ok(performance.now() - t0 < 500);
+});
