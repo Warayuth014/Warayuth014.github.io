@@ -14,7 +14,7 @@ export class ApiError extends Error {
   }
 }
 
-export const UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'application/pdf'];
+const UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'application/pdf'];
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
 
 function toBase64(bytes) {

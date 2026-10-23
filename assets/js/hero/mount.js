@@ -39,10 +39,10 @@ function setMode(stage, mode) {
   stage.classList.toggle('is-live', mode === 'live');
 }
 
-function whenIdle(fn) {
-  const run = () => (typeof requestIdleCallback === 'function' ? requestIdleCallback(fn, { timeout: 1500 }) : setTimeout(fn, 200));
-  if (document.readyState === 'complete') run();
-  else window.addEventListener('load', () => setTimeout(run, 0), { once: true });
+// Start right after the first paint (not after window load / idle), so the scene shows within ~2 s.
+function afterFirstPaint(fn) {
+  if (typeof requestAnimationFrame !== 'function') { setTimeout(fn, 100); return; }
+  requestAnimationFrame(() => setTimeout(fn, 100));
 }
 
 async function startLive(stage) {
@@ -115,7 +115,7 @@ export function syncHero(stage, theme) {
   if (hero.desk) { hero.desk.setTheme(theme); return; }
   if (stage.dataset.heroMode === 'loading') return; // import in flight; it reads hero.theme when it mounts
   setMode(stage, 'loading');
-  whenIdle(() => {
+  afterFirstPaint(() => {
     if (hero.stage === stage && stage.dataset.heroMode === 'loading' && !hero.desk) startLive(stage);
   });
 }
@@ -133,6 +133,6 @@ export function syncThreads(theme) {
   if (threads && threads.canvas.isConnected) threads.setTheme(theme);
   else {
     threads?.dispose();
-    threads = mountThreads(document.body, theme);
+    threads = mountThreads(document.body);
   }
 }

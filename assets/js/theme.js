@@ -20,7 +20,6 @@ const FONT_PAIRS = {
     mono: '"JetBrains Mono", ui-monospace, Consolas, monospace',
   },
 };
-let listenerAttached = false;
 
 // ---------- colour helpers (light mode derives its palette from the tokens) ----------
 const hexToRgb = (h) => [1, 3, 5].map((i) => parseInt(h.slice(i, i + 2), 16));
@@ -49,7 +48,7 @@ const darkenUntil = (hex, bg, min) => {
 const isHex = (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
 const pick = (v, d) => (isHex(v) ? v : d);
 
-export function loadFont(pair) {
+function loadFont(pair) {
   const def = FONT_PAIRS[pair] ?? FONT_PAIRS.default;
   let link = document.getElementById('font-pair');
   if (!link) {

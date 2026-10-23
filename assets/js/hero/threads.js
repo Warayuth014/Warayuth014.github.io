@@ -1,7 +1,7 @@
 // "Threads of light": a faint full-page 2D canvas of drifting points joined by thin lines,
 // gently pulled toward the cursor. Sits behind the content (CSS: .threads) and ignores pointer input.
 //
-// mountThreads(el, theme) -> { dispose, setTheme }
+// mountThreads(el) -> { dispose, setTheme }
 // Accent colours are read from the CSS custom properties, so light mode and theme edits follow along.
 
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
@@ -18,7 +18,7 @@ function toRgb(c) {
   return m && m.length >= 3 ? m.slice(0, 3).map(Number) : [124, 243, 255];
 }
 
-export function mountThreads(el, _theme) {
+export function mountThreads(el) {
   const canvas = document.createElement('canvas');
   canvas.className = 'threads';
   canvas.setAttribute('aria-hidden', 'true');

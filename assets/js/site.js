@@ -18,16 +18,14 @@ import { enableCursorGlow } from './fx/cursor-glow.js';
 import { enableTimelineProgress } from './fx/timeline.js';
 import { REDUCED_QUERY, COARSE_QUERY } from './fx/env.js';
 import { syncProjectDialog } from './project-dialog.js';
-import { applyTheme, loadFont } from './theme.js';
-
-export { applyTheme, loadFont };
+import { applyTheme } from './theme.js';
 
 const RENDERERS = new Map(Object.entries({ hero, about, projects, skills, journey, articles, contact }));
 
 const state = { content: null, lang: 'en', preview: false, error: false, warned: new Set() };
 let listenerAttached = false;
 
-export function setLang(lang) {
+function setLang(lang) {
   state.lang = lang === 'th' ? 'th' : 'en';
   if (!state.preview) {
     try { localStorage.setItem('lang', state.lang); } catch { /* storage blocked */ }

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 // Renders the live night-desk hero at 1600x900 in an installed Edge/Chrome and saves the canvas as
 // assets/img/hero-poster.webp (canvas.toDataURL). Usage: node tools/capture-poster.mjs [baseUrl]
-// Needs the dev server (node tools/serve.mjs 4173) and network access for three.js from unpkg.
+// Needs the dev server (node tools/serve.mjs 4173).
 // ?capture=1 makes the scene deterministic (fixed camera, code pre-typed, preserveDrawingBuffer).
 import { chromium } from 'playwright-core';
 import { mkdirSync, statSync, writeFileSync } from 'node:fs';
