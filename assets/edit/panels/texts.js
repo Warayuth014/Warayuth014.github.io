@@ -10,15 +10,6 @@ const ICONS = [['pin', 'หมุดสถานที่ (pin)'], ['language', 
 export function render(root, ctx) {
   const { hero, about, ui, meta } = ctx.draft.site;
   root.append(
-    el('h3', { text: 'ชื่อหน้าเว็บและคำอธิบาย (Title & description)' }),
-    lInput(ctx, { obj: meta, key: 'title', path: 'meta.title', label: 'ชื่อที่แท็บเบราว์เซอร์', hint: 'Page title (empty = name | tagline)' }),
-    lInput(ctx, { obj: meta, key: 'description', path: 'meta.description', label: 'คำอธิบายสำหรับ Google/แชร์ลิงก์', hint: 'Description', multiline: true, rows: 3 }),
-    el('h3', { text: 'ข้อความทั่วไป (Texts)' }),
-    lInput(ctx, { obj: ui, key: 'tagline', path: 'ui.tagline', label: 'ประโยคสั้นเหนือชื่อ', hint: 'Tagline (empty = default)' }),
-    lInput(ctx, { obj: ui, key: 'contactLead', path: 'ui.contactLead', label: 'ประโยคเชิญติดต่อ', hint: 'Contact lead (empty = default)' }),
-    lInput(ctx, { obj: ui, key: 'footer', path: 'ui.footer', label: 'ข้อความท้ายหน้า', hint: 'Footer (empty = default)' }),
-    el('h3', { text: 'ชื่อหัวข้อแต่ละส่วน (Section titles)' }),
-    ...SECTION_TITLE_IDS.map((sid) => lInput(ctx, { obj: ui.sectionTitles, key: sid, path: `ui.sectionTitles.${sid}`, label: `หัวข้อ ${sid}`, hint: 'Title (empty = default)' })),
     el('h3', { text: 'หน้าแรก (Hero)' }),
     lInput(ctx, { obj: hero, key: 'name', path: 'hero.name', label: 'ชื่อ', hint: 'Name' }),
     lInput(ctx, { obj: hero, key: 'intro', path: 'hero.intro', label: 'คำแนะนำตัว', hint: 'Intro', multiline: true, rows: 4 }),
@@ -45,5 +36,14 @@ export function render(root, ctx) {
           lInput(ctx, { obj: f, key: 'value', path: `${base}.value`, label: 'ค่า', hint: 'Value' }));
         body.addEventListener('input', retitle);
       },
-    }));
+    }),
+    el('h3', { text: 'ข้อความทั่วไป (Texts)' }),
+    lInput(ctx, { obj: ui, key: 'tagline', path: 'ui.tagline', label: 'ประโยคสั้นเหนือชื่อ', hint: 'Tagline (empty = default)' }),
+    lInput(ctx, { obj: ui, key: 'contactLead', path: 'ui.contactLead', label: 'ประโยคเชิญติดต่อ', hint: 'Contact lead (empty = default)' }),
+    lInput(ctx, { obj: ui, key: 'footer', path: 'ui.footer', label: 'ข้อความท้ายหน้า', hint: 'Footer (empty = default)' }),
+    el('h3', { text: 'หัวข้อแต่ละส่วนของหน้าแรก (Section titles)' }),
+    ...SECTION_TITLE_IDS.map((sid) => lInput(ctx, { obj: ui.sectionTitles, key: sid, path: `ui.sectionTitles.${sid}`, label: `หัวข้อส่วน ${sid}`, hint: 'Section title (empty = default)' })),
+    el('h3', { text: 'ชื่อแท็บและคำอธิบายเว็บ (Title & description)' }),
+    lInput(ctx, { obj: meta, key: 'title', path: 'meta.title', label: 'ข้อความบนแท็บเบราว์เซอร์', hint: 'Page title (empty = name | tagline)' }),
+    lInput(ctx, { obj: meta, key: 'description', path: 'meta.description', label: 'คำอธิบายสำหรับ Google/แชร์ลิงก์', hint: 'Description', multiline: true, rows: 3 }));
 }

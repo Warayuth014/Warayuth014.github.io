@@ -167,6 +167,7 @@ try {
   check(after.commitCount === before.commitCount + 1, `saving About TH made exactly one commit (${before.commitCount} -> ${after.commitCount})`);
   check(after.commits.at(-1).startsWith('edit: site'), `commit message: ${after.commits.at(-1)}`);
   check((await ghFile('content/site.json')).includes(story), 'content/site.json in the fake repo holds the new text');
+  check(JSON.parse(await ghFile('content/site.json')).workerUrl === workerUrl, 'the first save records the Worker URL in site.workerUrl');
   await page.waitForTimeout(1200);
   const post = workerCalls.slice(callsBefore);
   check(post.some((c) => c.path === '/save') && !post.some((c) => c.path === '/state'), `no /state refetch after save (calls: ${post.map((c) => c.path).join(', ')})`);
