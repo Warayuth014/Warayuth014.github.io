@@ -11,6 +11,7 @@ import * as skills from './sections/skills.js';
 import * as journey from './sections/journey.js';
 import * as articles from './sections/articles.js';
 import * as contact from './sections/contact.js';
+import { syncHero, syncThreads } from './hero/mount.js';
 
 const RENDERERS = new Map(Object.entries({ hero, about, projects, skills, journey, articles, contact }));
 
@@ -265,6 +266,17 @@ export async function boot({ content, preview } = {}) {
   state.error = false;
   applyTheme(content.theme);
   renderAll();
+  syncAmbient(content.theme);
+}
+
+// Hero scene and threads load after first paint; text is already on screen by now.
+function syncAmbient(theme) {
+  try {
+    syncThreads(theme);
+    syncHero(document.querySelector('#hero > .hero-stage'), theme);
+  } catch (e) {
+    console.warn(`ambient effects failed: ${e.message}`);
+  }
 }
 
 if (typeof document !== 'undefined' && document.getElementById('main') && document.body.dataset.autoboot !== 'off') {

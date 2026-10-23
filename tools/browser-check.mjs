@@ -1,5 +1,14 @@
 #!/usr/bin/env node
 // Usage: node tools/browser-check.mjs <url> [--mobile] [--shot <path>] [--fixture <site.json>] [--lang th|en]
+//        [--no-webgl] [--reduced-motion] [--frames] [--wait <ms>] [--scroll <px>]
+//   --no-webgl        launch Edge with GPU/3D APIs disabled so hasWebGL() is false
+//   --reduced-motion  emulate prefers-reduced-motion: reduce
+//   --frames          average requestAnimationFrame interval over 3 s, after the hero scene is up
+//   --wait <ms>       extra settle time before measuring / screenshot (default 0)
+//   --scroll <px>     scroll the page before the screenshot
+//   --viewport        screenshot only the visible viewport (default: full page)
+//   --device-memory <GB>  override navigator.deviceMemory (emulated phones report the desktop value)
+// The hero mode (live | poster | loading | off) is always printed.
 // Opens the page in an installed Edge/Chrome (playwright-core, no download), then prints console
 // errors, failed requests, external hosts, horizontal overflow, and saves a full-page screenshot.
 // Exits 1 on console errors or page errors.
@@ -15,16 +24,30 @@ let mobile = false;
 let shot = null;
 let fixture = null;
 let lang = null;
+let noWebgl = false;
+let reducedMotion = false;
+let frames = false;
+let wait = 0;
+let scroll = 0;
+let deviceMemory = null;
+let viewportOnly = false;
 for (let i = 0; i < args.length; i++) {
   const a = args[i];
   if (a === '--mobile') mobile = true;
+  else if (a === '--no-webgl') noWebgl = true;
+  else if (a === '--reduced-motion') reducedMotion = true;
+  else if (a === '--frames') frames = true;
+  else if (a === '--viewport') viewportOnly = true;
+  else if (a === '--device-memory') deviceMemory = Number(args[++i]);
+  else if (a === '--wait') wait = Number(args[++i]) || 0;
+  else if (a === '--scroll') scroll = Number(args[++i]) || 0;
   else if (a === '--shot') shot = args[++i];
   else if (a === '--fixture') fixture = args[++i];
   else if (a === '--lang') lang = args[++i];
   else if (!url) url = a;
 }
 if (!url) {
-  console.error('usage: node tools/browser-check.mjs <url> [--mobile] [--shot <path>] [--fixture <path>] [--lang th|en]');
+  console.error('usage: node tools/browser-check.mjs <url> [--mobile] [--shot <path>] [--fixture <path>] [--lang th|en] [--no-webgl] [--reduced-motion] [--frames] [--wait <ms>] [--scroll <px>]');
   process.exit(2);
 }
 
@@ -41,17 +64,22 @@ if (fixture) {
 
 async function launch() {
   for (const channel of ['msedge', 'chrome']) {
-    try { return await chromium.launch({ channel }); } catch { /* try next */ }
+    try {
+      const launchArgs = noWebgl ? ['--disable-gpu', '--disable-3d-apis', '--disable-webgl', '--disable-webgl2'] : [];
+      return await chromium.launch({ channel, args: launchArgs });
+    } catch { /* try next */ }
   }
   throw new Error('no Edge or Chrome found for playwright-core');
 }
 
 const browser = await launch();
-const context = await browser.newContext(
-  mobile
+const context = await browser.newContext({
+  ...(mobile
     ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
-    : { viewport: { width: 1366, height: 800 } },
-);
+    : { viewport: { width: 1366, height: 800 } }),
+  ...(reducedMotion ? { reducedMotion: 'reduce' } : {}),
+});
+if (deviceMemory !== null) await context.addInitScript((m) => Object.defineProperty(navigator, 'deviceMemory', { get: () => m }), deviceMemory);
 if (lang) await context.addInitScript((l) => { try { localStorage.setItem('lang', l); } catch { /* ignore */ } }, lang);
 const page = await context.newPage();
 
@@ -65,6 +93,36 @@ page.on('request', (r) => { try { const h = new URL(r.url()); if (/^https?:$/.te
 
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.evaluate(() => document.fonts?.ready);
+// the hero scene mounts after first paint: wait until it settles on live / poster / off
+await page.waitForFunction(() => {
+  const m = document.querySelector('.hero-stage')?.dataset.heroMode;
+  return !document.querySelector('.hero-stage') || m === 'live' || m === 'poster' || m === 'off';
+}, null, { timeout: 15000 }).catch(() => {});
+if (wait) await page.waitForTimeout(wait);
+
+const heroMode = await page.evaluate(() => {
+  const s = document.querySelector('.hero-stage');
+  return s ? `${s.dataset.heroMode ?? 'none'} (canvas: ${Boolean(s.querySelector('canvas'))}, poster: ${Boolean(s.querySelector('.hero-poster'))}, threads: ${Boolean(document.querySelector('canvas.threads'))})` : 'no hero';
+});
+
+let frameMs = null;
+if (frames) {
+  frameMs = await page.evaluate(() => new Promise((done) => {
+    let n = 0;
+    let first = 0;
+    const loop = (now) => {
+      if (!first) first = now;
+      n++;
+      if (now - first >= 3000) done((now - first) / (n - 1));
+      else requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }));
+}
+if (scroll) {
+  await page.evaluate((y) => window.scrollTo(0, y), scroll);
+  await page.waitForTimeout(1500);
+}
 
 const metrics = await page.evaluate(() => ({
   scrollWidth: document.documentElement.scrollWidth,
@@ -77,10 +135,10 @@ const overflow = metrics.scrollWidth > metrics.clientWidth;
 if (shot) {
   mkdirSync(dirname(resolve(shot)), { recursive: true });
   let out = resolve(shot);
-  const png = await page.screenshot({ fullPage: true, type: 'png' });
+  const png = await page.screenshot({ fullPage: !viewportOnly, type: 'png' });
   if (png.length > 400 * 1024) {
     out = out.replace(/\.png$/i, '') + '.jpg';
-    writeFileSync(out, await page.screenshot({ fullPage: true, type: 'jpeg', quality: 28 }));
+    writeFileSync(out, await page.screenshot({ fullPage: !viewportOnly, type: 'jpeg', quality: 28 }));
   } else {
     writeFileSync(out, png);
   }
@@ -91,6 +149,8 @@ await browser.close();
 
 console.log(`url: ${url}`);
 console.log(`title: ${metrics.title}`);
+console.log(`hero: ${heroMode}`);
+if (frameMs !== null) console.log(`average frame time over 3 s: ${frameMs.toFixed(2)} ms (${(1000 / frameMs).toFixed(1)} fps)`);
 console.log(`sections: ${metrics.sections.join(', ')}`);
 console.log(`horizontal overflow: ${overflow ? `YES (${metrics.scrollWidth} > ${metrics.clientWidth})` : 'no'}`);
 console.log(`external hosts: ${[...hosts].join(', ') || '(none)'}`);

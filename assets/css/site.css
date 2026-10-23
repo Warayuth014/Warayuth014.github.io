@@ -126,9 +126,17 @@ main { display: block; }
   padding: 7rem var(--gutter) clamp(3rem, 9vh, 6rem);
 }
 .hero-stage { position: absolute; inset: 0; z-index: -1; overflow: hidden; }
+.hero-canvas { position: absolute; inset: 0; width: 100%; height: 100%; display: block; opacity: 0; transition: opacity 0.9s ease; }
+.hero-stage.is-live .hero-canvas { opacity: 1; }
+.hero-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 50%; max-width: none; }
+.threads { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0.8; }
+@media (prefers-reduced-motion: reduce) { .hero-canvas { transition: none; } }
+@media (max-width: 719px) { .hero-poster, .hero-canvas { opacity: 0.5; } .hero-stage.is-live .hero-canvas { opacity: 0.5; } .hero-poster { object-position: 80% 50%; } }
 .hero-stage::after {
   content: ""; position: absolute; inset: 0;
   background:
+    linear-gradient(90deg, color-mix(in srgb, var(--bg1) 88%, transparent) 0%, color-mix(in srgb, var(--bg1) 55%, transparent) 38%, transparent 68%),
+    linear-gradient(0deg, color-mix(in srgb, var(--bg1) 70%, transparent), transparent 40%),
     radial-gradient(34rem 26rem at 78% 30%, color-mix(in srgb, var(--accent3) 28%, transparent), transparent 65%),
     radial-gradient(30rem 24rem at 60% 70%, color-mix(in srgb, var(--accent1) 20%, transparent), transparent 65%);
 }
