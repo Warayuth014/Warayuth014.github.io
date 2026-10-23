@@ -57,7 +57,7 @@ export async function isAuthed(ctx) {
 async function checkPassword(ctx, password) {
   const ip = clientIp(ctx.request);
   const lock = await reserveAttempt(ctx.env, ip, ctx.now());
-  if (lock.locked) return reply(429, { error: 'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่', retryAfter: lock.retryAfter });
+  if (lock.locked) return reply(429, { error: 'ลองผิดหลายครั้งเกินไป กรุณารอสักครู่แล้วลองใหม่', code: 'locked', retryAfter: lock.retryAfter });
   const stored = await ctx.env.STATE.get('pw:hash');
   if (!stored) {
     await releaseAttempt(ctx.env, ip, ctx.now());
@@ -67,7 +67,7 @@ async function checkPassword(ctx, password) {
     await releaseAttempt(ctx.env, ip, ctx.now());
     return null;
   }
-  return reply(401, { error: BAD_PASSWORD });
+  return reply(401, { error: BAD_PASSWORD, code: 'bad_password' });
 }
 
 async function newSession(ctx) {
@@ -177,7 +177,7 @@ export async function save(ctx) {
 
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
-  if (head.commitSha !== b.baseSha) return reply(409, { error: STALE_MESSAGE });
+  if (head.commitSha !== b.baseSha) return reply(409, { error: STALE_MESSAGE, code: 'conflict' });
   const repo = await readRepo(gh, head);
   const { files } = repo;
 
@@ -225,7 +225,7 @@ export async function save(ctx) {
   try {
     return reply(200, { commitSha: await gh.commit(head, changes, message) });
   } catch (e) {
-    if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE });
+    if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE, code: 'conflict' });
     throw e;
   }
 }
@@ -271,12 +271,12 @@ export async function upload(ctx) {
 
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
-  if (typeof b.baseSha === 'string' && b.baseSha !== head.commitSha) return reply(409, { error: STALE_MESSAGE });
+  if (typeof b.baseSha === 'string' && b.baseSha !== head.commitSha) return reply(409, { error: STALE_MESSAGE, code: 'conflict' });
   try {
     const commitSha = await gh.commit(head, [{ path: rel, base64: b.dataBase64 }], `upload: ${rel.split('/').pop()}`);
     return reply(200, { path: `/${rel}`, commitSha });
   } catch (e) {
-    if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE });
+    if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE, code: 'conflict' });
     throw e;
   }
 }
@@ -288,14 +288,14 @@ export async function deleteUpload(ctx) {
   if (!pathAllowed(rel)) return bad('path ไม่ถูกต้อง');
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
-  if (typeof ctx.body.baseSha === 'string' && ctx.body.baseSha !== head.commitSha) return reply(409, { error: STALE_MESSAGE });
+  if (typeof ctx.body.baseSha === 'string' && ctx.body.baseSha !== head.commitSha) return reply(409, { error: STALE_MESSAGE, code: 'conflict' });
   const files = await gh.getFiles(head.treeSha);
   if (!files.has(rel)) return reply(404, { error: 'ไม่พบไฟล์นี้' });
   try {
     const commitSha = await gh.commit(head, [{ path: rel, delete: true }], `delete upload: ${rel.split('/').pop()}`);
     return reply(200, { ok: true, commitSha });
   } catch (e) {
-    if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE });
+    if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE, code: 'conflict' });
     throw e;
   }
 }

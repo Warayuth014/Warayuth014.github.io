@@ -1,5 +1,6 @@
 // Small DOM helpers shared by the editor panels. Content strings only ever reach the page through
 // textContent / .value / setAttribute, never through innerHTML.
+import { safeAsset } from '../../shared/schema.js';
 
 export function el(tag, props = {}, ...kids) {
   const node = document.createElement(tag);
@@ -173,10 +174,10 @@ export function imageInput(ctx, { obj, key, path, label, hint, accept = 'image/p
   const status = el('p', { class: 'note', role: 'status' });
   const preview = el('div', { class: 'thumb' });
   const input = el('input', { id, type: 'file', accept });
-  const removeBtn = button('เอารูปออก', () => { obj[key] = null; draw(); ctx.changed(); }, { cls: 'small' });
+  const removeBtn = button('เอารูปออก', () => { ctx.queueDelete(obj[key]); obj[key] = null; draw(); ctx.changed(); }, { cls: 'small' });
   function draw() {
     preview.replaceChildren();
-    if (obj[key]) preview.append(el('img', { src: obj[key], alt: '' }), el('code', { text: obj[key] }));
+    if (obj[key]) preview.append(safeAsset(obj[key]) ? el('img', { src: safeAsset(obj[key]), alt: '' }) : null, el('code', { text: obj[key] }));
     else preview.append(el('span', { class: 'note', text: 'ยังไม่มีรูป' }));
     removeBtn.hidden = !obj[key];
   }
@@ -185,7 +186,9 @@ export function imageInput(ctx, { obj, key, path, label, hint, accept = 'image/p
     if (!file) return;
     status.textContent = 'กำลังอัปโหลด...';
     try {
+      const old = obj[key];
       obj[key] = await ctx.upload(file);
+      ctx.queueDelete(old); // the replaced file goes after the next save
       status.textContent = 'อัปโหลดแล้ว';
       draw();
       ctx.changed();
@@ -261,7 +264,6 @@ export function listEditor(ctx, { path, items, newItem, renderItem, title, addLa
   return wrapper;
 }
 
-export const slugify = (text, max = 60) => String(text ?? '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-+|-+$/g, '').slice(0, max).replace(/-+$/, '');
 
 export const tagsConv = {
   fromValue: (a) => (Array.isArray(a) ? a.join(', ') : ''),

@@ -78,7 +78,7 @@ async function handle(request, env) {
   if (!route) return respond(404, { error: 'not found' }, cors);
 
   const ctx = { env, request, now: env.NOW ?? Date.now, body: undefined };
-  if (route.auth && !(await routes.isAuthed(ctx))) return respond(401, { error: 'กรุณาเข้าสู่ระบบ' }, cors);
+  if (route.auth && !(await routes.isAuthed(ctx))) return respond(401, { error: 'กรุณาเข้าสู่ระบบ', code: 'unauthorized' }, cors);
 
   if (route.maxBody) {
     const declared = Number(request.headers.get('Content-Length'));

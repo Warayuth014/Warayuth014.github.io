@@ -34,7 +34,7 @@ test('correct PIN gives a token valid for 2 hours; wrong PIN is a generic 401', 
   assert.ok(ok.json.token.includes('.'));
   const bad = await login(env, 'nope');
   assert.equal(bad.status, 401);
-  assert.deepEqual(bad.json, { error: 'รหัสไม่ถูกต้อง' });
+  assert.deepEqual(bad.json, { error: 'รหัสไม่ถูกต้อง', code: 'bad_password' });
 });
 
 test('successful logins write nothing to KV', async () => {

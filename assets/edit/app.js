@@ -2,7 +2,8 @@
 // The draft lives in memory and in localStorage ("editor.draft"); the session token only in sessionStorage.
 import { validateSite, validateArticle } from '../../shared/schema.js';
 import { renderArticlePage } from '../../shared/render-article.js';
-import { createApi, ApiError, cleanWorkerUrl } from './api.js';
+import { createApi, ApiError } from './api.js';
+import { cleanWorkerUrl, UPLOAD_FILE } from './util.js';
 import { el, button, nextId, labelText } from './ui.js';
 import * as sections from './panels/sections.js';
 import * as texts from './panels/texts.js';
@@ -39,6 +40,7 @@ const S = {
   baseline: { site: '', articles: new Map() }, // JSON text of what the repo has
   draft: { site: null, articles: [] },
   deleted: [], // slugs of saved articles removed in the draft
+  pendingDeletes: [], // /uploads/... files nothing in the draft uses any more; deleted only after a successful save
   savedSlugs: new Set(),
   errors: new Map(),
   errorList: [],
@@ -106,7 +108,7 @@ function diff() {
   const changedArticles = S.draft.articles.filter((a) => S.baseline.articles.get(a.slug) !== JSON.stringify(a));
   const present = new Set(S.draft.articles.map((a) => a.slug));
   const deleteArticles = S.deleted.filter((s) => !present.has(s) && S.baseline.articles.has(s));
-  return { siteDirty, changedArticles, deleteArticles, dirty: siteDirty || changedArticles.length > 0 || deleteArticles.length > 0 };
+  return { siteDirty, changedArticles, deleteArticles, dirty: siteDirty || changedArticles.length > 0 || deleteArticles.length > 0 || S.pendingDeletes.length > 0 };
 }
 
 let statusKind = '';
@@ -133,7 +135,7 @@ function writeDraft() {
   clearTimeout(autosaveTimer);
   if (!S.ready) return;
   if (!diff().dirty) { store.del(localStorage, DRAFT_KEY); return; }
-  const ok = store.set(localStorage, DRAFT_KEY, JSON.stringify({ baseSha: S.baseSha, site: S.draft.site, articles: S.draft.articles, deleted: S.deleted, savedAt: new Date().toISOString() }));
+  const ok = store.set(localStorage, DRAFT_KEY, JSON.stringify({ baseSha: S.baseSha, site: S.draft.site, articles: S.draft.articles, deleted: S.deleted, pendingDeletes: S.pendingDeletes, savedAt: new Date().toISOString() }));
   if (!ok) announce('บันทึกฉบับร่างลงเบราว์เซอร์ไม่ได้');
 }
 
@@ -331,23 +333,53 @@ function adopt(st) {
   S.baseline = { site: JSON.stringify(site), articles: new Map(arts.map((a) => [a.slug, JSON.stringify(a)])) };
   S.savedSlugs = new Set(arts.map((a) => a.slug));
   S.deleted = [];
+  S.pendingDeletes = [];
   S.errors = new Map();
   S.errorList = [];
 }
 
+const CORRUPT_DRAFT = 'ฉบับร่างที่เก็บไว้ในเบราว์เซอร์เสียหาย จึงลบทิ้งแล้ว (ข้อมูลบนเว็บไม่ได้รับผลกระทบ)';
+
+/** The stored draft with every part checked and cloned, or null when anything has the wrong shape. */
+function readStoredDraft(stored) {
+  if (!isObj(stored) || !isObj(stored.site) || !Array.isArray(stored.articles)) return null;
+  const s = stored.site;
+  const listOk = (v) => v === undefined || (Array.isArray(v) && v.every(isObj));
+  if (![s.sections, s.projects, s.skills, s.journey].every(listOk) || !listOk(s.about?.facts) || !listOk(s.contact?.links)) return null;
+  if (!stored.articles.every((a) => isObj(a) && typeof a.slug === 'string')) return null;
+  if (stored.deleted !== undefined && !(Array.isArray(stored.deleted) && stored.deleted.every((x) => typeof x === 'string'))) return null;
+  const pending = stored.pendingDeletes === undefined ? [] : stored.pendingDeletes;
+  if (!Array.isArray(pending) || !pending.every((x) => typeof x === 'string' && UPLOAD_FILE.test(x))) return null;
+  return {
+    baseSha: typeof stored.baseSha === 'string' ? stored.baseSha : '',
+    site: ensureShape(structuredClone(s)),
+    articles: stored.articles.map((a) => ensureArticle(structuredClone(a))),
+    deleted: stored.deleted ?? [],
+    pendingDeletes: pending,
+    savedAt: typeof stored.savedAt === 'string' ? stored.savedAt : '',
+  };
+}
+
+/** Loads the repo state; returns { stored, notice }: a usable stored draft (or null) and a Thai notice if one was discarded. */
 async function loadState() {
   const st = await api.state();
   adopt(st);
   S.ready = true;
-  const stored = readJson(localStorage, DRAFT_KEY);
-  if (isObj(stored) && isObj(stored.site) && Array.isArray(stored.articles)) {
-    const same = JSON.stringify(ensureShape(structuredClone(stored.site))) === S.baseline.site
+  const raw = store.get(localStorage, DRAFT_KEY);
+  if (raw === null) return { stored: null, notice: '' };
+  try {
+    const stored = readStoredDraft(JSON.parse(raw));
+    if (!stored) throw new Error('bad shape');
+    const same = JSON.stringify(stored.site) === S.baseline.site
       && stored.articles.length === S.draft.articles.length
-      && stored.articles.every((a) => S.baseline.articles.get(a?.slug) === JSON.stringify(ensureArticle(structuredClone(a))));
-    if (same && !(Array.isArray(stored.deleted) && stored.deleted.length)) store.del(localStorage, DRAFT_KEY);
-    else return stored;
+      && stored.articles.every((a) => S.baseline.articles.get(a.slug) === JSON.stringify(a))
+      && stored.deleted.length === 0 && stored.pendingDeletes.length === 0;
+    if (same) { store.del(localStorage, DRAFT_KEY); return { stored: null, notice: '' }; }
+    return { stored, notice: '' };
+  } catch {
+    store.del(localStorage, DRAFT_KEY);
+    return { stored: null, notice: CORRUPT_DRAFT };
   }
-  return null;
 }
 
 function offerRestore(stored) {
@@ -357,11 +389,9 @@ function offerRestore(stored) {
     `พบฉบับร่างที่ยังไม่ได้บันทึก${when}${stale ? ' — ฉบับร่างนี้สร้างจากเว็บเวอร์ชันเก่า การกู้คืนอาจเขียนทับการแก้ไขที่เกิดขึ้นหลังจากนั้น' : ''}`,
     stale ? 'warn' : 'info',
     button('กู้คืนฉบับร่าง', () => {
-      S.draft = {
-        site: ensureShape(structuredClone(stored.site)),
-        articles: stored.articles.filter((a) => isObj(a) && typeof a.slug === 'string').map((a) => ensureArticle(structuredClone(a))),
-      };
-      S.deleted = (Array.isArray(stored.deleted) ? stored.deleted : []).filter((s) => S.savedSlugs.has(s));
+      S.draft = { site: stored.site, articles: stored.articles };
+      S.deleted = stored.deleted.filter((s) => S.savedSlugs.has(s));
+      S.pendingDeletes = [...stored.pendingDeletes];
       banner('');
       afterDraftReplaced();
       writeDraft();
@@ -420,31 +450,53 @@ const ctx = {
   workerUrl,
   setWorkerUrl(v) { store.set(localStorage, URL_KEY, v); },
   logout() { sessionEnded('ออกจากระบบแล้ว'); },
-  async upload(file) {
+  upload: (file) => serial(async () => {
     try {
       const res = await api.upload(file, S.baseSha);
       if (res.commitSha) S.baseSha = res.commitSha; // uploads commit at once and move the branch head
       return res.path;
     } catch (e) { throw guard(e); }
-  },
-  async deleteUpload(path) {
-    try {
-      const res = await api.deleteUpload(path, S.baseSha);
-      if (res.commitSha) S.baseSha = res.commitSha;
-    } catch (e) {
-      if (e instanceof ApiError && e.status === 404) return; // already gone
-      throw guard(e);
-    }
+  }),
+  /** The draft stopped using this file. It is only deleted after the next successful save (the live site may still use it). */
+  queueDelete(path) {
+    if (typeof path === 'string' && UPLOAD_FILE.test(path) && !S.pendingDeletes.includes(path)) S.pendingDeletes.push(path);
   },
   async changePassword(current, next) {
     storeSession(await api.changePassword(current, next));
   },
 };
 
+/** Upload, delete and save run one at a time so each one sends the baseSha the previous one produced. */
+let queue = Promise.resolve();
+function serial(fn) {
+  const run = queue.then(fn);
+  queue = run.catch(() => {});
+  return run;
+}
+
 /** A 409 anywhere means the repo moved: offer the reload. Returns the error for the caller to show. */
 function guard(e) {
-  if (e instanceof ApiError && e.status === 409) showStale(e.message);
+  if (e instanceof ApiError && e.code === 'conflict') showStale(e.message);
   return e;
+}
+
+/** Deletes queued uploads that neither the draft nor the saved content uses. Failures stay queued. */
+async function flushPendingDeletes() {
+  const inUse = (p) => siteJson().includes(p) || S.baseline.site.includes(p) || S.draft.articles.some((a) => JSON.stringify(a).includes(p));
+  let failed = 0;
+  for (const path of [...S.pendingDeletes]) {
+    if (!inUse(path)) {
+      try {
+        const res = await serial(() => api.deleteUpload(path, S.baseSha));
+        if (res.commitSha) S.baseSha = res.commitSha;
+      } catch (e) {
+        guard(e);
+        if (!(e instanceof ApiError && e.status === 404)) { failed += 1; continue; } // already gone counts as done
+      }
+    }
+    S.pendingDeletes = S.pendingDeletes.filter((p) => p !== path);
+  }
+  return failed;
 }
 
 function showStale(message) {
@@ -453,11 +505,12 @@ function showStale(message) {
   banner(message, 'warn', button('โหลดใหม่', async () => {
     writeDraft(); // the local draft stays available; it is offered again after the reload
     try {
-      const stored = await loadState();
+      const { stored, notice } = await loadState();
       banner('');
       setStatus('โหลดข้อมูลล่าสุดแล้ว', '');
       afterDraftReplaced();
       if (stored) offerRestore(stored);
+      else if (notice) banner(notice, 'warn');
     } catch (err) {
       banner(err.message, 'warn');
     }
@@ -477,34 +530,41 @@ async function save() {
   const d = diff();
   if (!d.dirty) { setStatus('ยังไม่มีการแก้ไข', ''); return; }
 
-  const payload = { baseSha: S.baseSha };
   const siteSnapshot = siteJson();
-  if (d.siteDirty) payload.site = JSON.parse(siteSnapshot);
   const sent = d.changedArticles.map((a) => JSON.parse(JSON.stringify(a)));
-  if (sent.length) payload.articles = sent;
-  if (d.deleteArticles.length) payload.deleteArticles = d.deleteArticles;
 
   S.saving = true;
   setStatus('กำลังบันทึก...', '');
   refreshDirty();
   try {
-    const res = await api.save(payload);
-    S.baseSha = res.commitSha;
+    // queued behind any upload still in flight, so baseSha is read only when this request is sent
+    const hasContent = d.siteDirty || sent.length > 0 || d.deleteArticles.length > 0;
+    if (hasContent) {
+      await serial(async () => {
+        const payload = { baseSha: S.baseSha };
+        if (d.siteDirty) payload.site = JSON.parse(siteSnapshot);
+        if (sent.length) payload.articles = sent;
+        if (d.deleteArticles.length) payload.deleteArticles = d.deleteArticles;
+        S.baseSha = (await api.save(payload)).commitSha;
+      });
+    }
     if (d.siteDirty) S.baseline.site = siteSnapshot;
     for (const a of sent) { S.baseline.articles.set(a.slug, JSON.stringify(a)); S.savedSlugs.add(a.slug); }
     for (const s of d.deleteArticles) { S.baseline.articles.delete(s); S.savedSlugs.delete(s); }
     S.deleted = S.deleted.filter((s) => !d.deleteArticles.includes(s));
+    const failedDeletes = await flushPendingDeletes(); // the live site no longer points at these files
     S.saving = false;
     banner('');
     setStatus(SAVED_MESSAGE, 'ok');
     announce(SAVED_MESSAGE);
+    if (failedDeletes) announce(`ลบไฟล์เก่าไม่สำเร็จ ${failedDeletes} ไฟล์ จะลองใหม่ตอนบันทึกครั้งหน้า`);
     writeDraft(); // clean -> removes the stored draft; edits made while saving stay in it
     renderPanel();
     refreshDirty();
   } catch (e) {
     S.saving = false;
     refreshDirty();
-    if (e instanceof ApiError && e.status === 409) {
+    if (e instanceof ApiError && e.code === 'conflict') {
       showStale(e.message);
     } else if (e instanceof ApiError && e.status === 400 && Array.isArray(e.errors)) {
       mapServerErrors(e.errors, sent.map((a) => a.slug));
@@ -559,7 +619,7 @@ function showLogin(message = '') {
     } catch (e) {
       submit.disabled = false;
       msg.className = 'err';
-      const wait = e instanceof ApiError && e.status === 429 && Number(e.retryAfter) > 0 ? ` (รออีกประมาณ ${Math.ceil(e.retryAfter / 60)} นาที)` : '';
+      const wait = e instanceof ApiError && e.code === 'locked' && Number(e.retryAfter) > 0 ? ` (รออีกประมาณ ${Math.ceil(e.retryAfter / 60)} นาที)` : '';
       msg.textContent = `${e.message}${wait}`;
       if (e.status === 401) { pw.value = ''; pw.focus(); }
     }
@@ -570,9 +630,10 @@ function showLogin(message = '') {
 }
 
 async function enter() {
-  const stored = await loadState();
+  const { stored, notice } = await loadState();
   buildEditor();
   if (stored) offerRestore(stored);
+  else if (notice) banner(notice, 'warn');
 }
 
 function buildEditor() {

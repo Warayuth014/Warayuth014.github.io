@@ -1,11 +1,13 @@
 // Client for the Cloudflare Worker (worker/README.th.md). Pure fetch wrapper: no DOM.
 // Every failure is an ApiError with a Thai message ready to show.
+import { cleanWorkerUrl } from './util.js';
 
 export class ApiError extends Error {
-  constructor(message, { status = 0, errors = null, retryAfter = null, network = false } = {}) {
+  constructor(message, { status = 0, code = null, errors = null, retryAfter = null, network = false } = {}) {
     super(message);
     this.name = 'ApiError';
     this.status = status;
+    this.code = code; // stable machine-readable reason from the Worker (bad_password, locked, conflict, unauthorized)
     this.errors = errors; // 400 from /save: list of "site: path: message" strings
     this.retryAfter = retryAfter;
     this.network = network;
@@ -14,13 +16,6 @@ export class ApiError extends Error {
 
 export const UPLOAD_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'application/pdf'];
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
-const WRONG_PASSWORD = 'รหัสไม่ถูกต้อง';
-
-/** https:// URL, or http://localhost / 127.0.0.1 for local development. Returns the cleaned URL or null. */
-export function cleanWorkerUrl(v) {
-  const s = String(v ?? '').trim().replace(/\/+$/, '');
-  return /^(https:\/\/[^\s/]+|http:\/\/(localhost|127\.0\.0\.1)(:\d+)?)(\/[^\s]*)?$/.test(s) ? s : null;
-}
 
 function toBase64(bytes) {
   let bin = '';
@@ -53,9 +48,9 @@ export function createApi({ getBase, getToken, onUnauthorized, fetchFn }) {
     } catch { /* not JSON */ }
     if (res.ok) return data ?? {};
     const message = (data && (data.error || (Array.isArray(data.errors) && 'ข้อมูลบางส่วนไม่ถูกต้อง'))) || `Worker ตอบกลับผิดปกติ (${res.status})`;
-    // 401 "รหัสไม่ถูกต้อง" on /password is a wrong current password, not an expired session
-    if (res.status === 401 && auth && data?.error !== WRONG_PASSWORD) onUnauthorized?.();
-    throw new ApiError(message, { status: res.status, errors: data?.errors ?? null, retryAfter: data?.retryAfter ?? null });
+    // code bad_password on /password is a wrong current password, not an expired session
+    if (res.status === 401 && auth && data?.code !== 'bad_password') onUnauthorized?.();
+    throw new ApiError(message, { status: res.status, code: data?.code ?? null, errors: data?.errors ?? null, retryAfter: data?.retryAfter ?? null });
   }
 
   return {

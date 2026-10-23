@@ -56,6 +56,9 @@ async function waitFor(fn, ms, what) {
 const firstLine = (child) => waitFor(() => /http:\/\/127\.0\.0\.1:\d+/.exec(child.output)?.[0], 10000, 'server url');
 
 const devVars = resolve(worker, '.dev.vars');
+for (const ev of ['uncaughtException', 'unhandledRejection']) {
+  process.on(ev, (e) => { console.log(`FAIL  ${e?.stack ?? e}`); killAll(); if (existsSync(devVars)) rmSync(devVars); process.exit(1); });
+}
 const wranglerBin = resolve(worker, 'node_modules/wrangler/bin/wrangler.js');
 const setPassword = (...a) => spawnSync(process.execPath, ['scripts/set-password.mjs', '--local', ...a], { cwd: worker, env: { ...process.env, NEW_PASSWORD: PIN }, encoding: 'utf8' });
 
@@ -110,6 +113,7 @@ try {
   };
 
   const { page } = await newPage();
+  page.on('dialog', (d) => d.accept().catch(() => {})); // beforeunload prompts while a draft is open
   const lf = (legend, lang) => page.locator('fieldset.lfield', { hasText: legend }).first().locator(`[lang="${lang}"]`).first();
   const tab = (id) => page.click(`#tab-${id}`);
   const status = () => page.locator('#status');
@@ -146,7 +150,7 @@ try {
   await page.getByRole('button', { name: /ย้ายขึ้น หน้าแรก/ }).click();
   await page.waitForTimeout(100);
   check((await page.locator('.section-row').first().getAttribute('data-id')) === 'hero', 'moving back restores the order');
-  check((await status().textContent()).includes('ยังไม่มีการแก้ไข') || true, 'status readable');
+  check((await status().textContent()).includes('ยังไม่มีการแก้ไข'), 'moving a section and back leaves nothing to save');
 
   // ---------- 3. edit About TH + save = exactly one commit ----------
   await tab('texts');
@@ -180,7 +184,7 @@ try {
   await page.getByRole('button', { name: 'รีเซ็ตเป็นธีมเริ่มต้น' }).click();
   await siteFrame().waitForFunction(() => getComputedStyle(document.documentElement).getPropertyValue('--accent1').trim().toLowerCase() === '#7cf3ff', null, { timeout: 3000 });
   check(true, 'reset to default theme restores the preview');
-  check((await status().textContent()).includes('ยังไม่มีการแก้ไข') || (await page.locator('#save-btn').isDisabled()), 'resetting to the saved values leaves nothing to save');
+  check(await page.locator('#save-btn').isDisabled(), 'resetting to the saved values leaves nothing to save (save button disabled)');
 
   // ---------- 5. validation errors next to fields, nothing sent ----------
   await tab('texts');
@@ -225,11 +229,9 @@ try {
   check(true, 'image uploaded and inserted as <img src="/uploads/...">');
   await page.locator('.switch-field input[role="switch"]').check();
   await page.waitForTimeout(500);
-  const artFrame = page.frames().find((f) => f !== page.mainFrame() && !f.url().includes('index.html'));
   const artHtml = await page.locator('iframe[title="ตัวอย่างบทความ"]').getAttribute('srcdoc');
   check(artHtml.includes('Hello Editor!') && artHtml.includes('<img src="/uploads/') && !artHtml.includes('<script>alert') && !artHtml.includes('<img src=x') && !/<script/i.test(artHtml), 'article preview renders the draft and escapes injected markup');
   check((await page.locator('iframe[title="ตัวอย่างบทความ"]').getAttribute('sandbox')) === '' , 'article preview iframe is sandboxed without scripts');
-  void artFrame;
   await shot(page, 'article-editor');
   const beforeArt = await ghState();
   await page.click('#save-btn');
@@ -241,6 +243,46 @@ try {
   check(pageHtml.includes('/uploads/') && !pageHtml.includes('<img src=x') && !pageHtml.includes('<script>alert'), 'generated page has the image and no injected markup');
   check((await ghFile('content/articles/index.json')).includes('hello-editor'), 'article list index updated');
   check((await page.locator('#slug-ro').count()) === 1, 'slug of a saved article is read-only');
+
+  // ---------- 6b. résumé: removing only unlinks in the draft; the file goes after the next save ----------
+  const PDF = Buffer.from('%PDF-1.4\n1 0 obj\n<<>>\nendobj\n');
+  const uploadResume = async () => {
+    await tab('resume');
+    await page.locator('#panel input[type="file"]').setInputFiles({ name: 'cv.pdf', mimeType: 'application/pdf', buffer: PDF });
+    await page.waitForSelector('.resume-box a');
+    const file = new URL(await page.locator('.resume-box a').getAttribute('href'), 'http://x').pathname;
+    await page.click('#save-btn');
+    await page.waitForFunction((m) => document.getElementById('status').textContent === m, SAVED, { timeout: 20000 });
+    return file;
+  };
+  const cvA = await uploadResume();
+  check((await ghState()).files.includes(cvA.slice(1)) && (await ghFile('content/site.json')).includes(cvA), `résumé uploaded and saved (${cvA})`);
+  await page.getByRole('button', { name: 'เอาเรซูเม่ออก' }).click();
+  await page.waitForTimeout(400);
+  check((await ghState()).files.includes(cvA.slice(1)), 'removing the résumé does not delete the live file before saving');
+  await page.click('#save-btn');
+  await page.waitForFunction((m) => document.getElementById('status').textContent === m, SAVED, { timeout: 20000 });
+  await waitFor(async () => !(await ghState()).files.includes(cvA.slice(1)), 8000, 'old résumé file deleted');
+  check(!(await ghFile('content/site.json')).includes(cvA), 'saved site.json no longer links the résumé, and the file is deleted after that save');
+  const cvB = await uploadResume();
+  await page.getByRole('button', { name: 'เอาเรซูเม่ออก' }).click();
+  await page.waitForTimeout(700); // autosave
+  await page.reload();
+  await page.getByRole('button', { name: 'ทิ้งฉบับร่าง' }).click();
+  await page.waitForTimeout(400);
+  check((await ghState()).files.includes(cvB.slice(1)) && (await ghFile('content/site.json')).includes(cvB), 'discarding the draft keeps the live résumé file');
+  check(await page.evaluate(() => localStorage.getItem('editor.draft') === null), 'discarded draft (with its queued deletion) is gone');
+
+  // ---------- 6c. a corrupt stored draft is discarded with a notice, login still works ----------
+  await page.evaluate(() => localStorage.setItem('editor.draft', JSON.stringify({ baseSha: 'x', site: null, articles: [null, 'x', 5] })));
+  await page.reload();
+  await page.waitForSelector('#banner:not([hidden])', { timeout: 15000 });
+  check((await page.locator('#banner p').textContent()).includes('เสียหาย'), 'corrupt draft: Thai notice shown');
+  check((await page.locator('#save-btn').count()) === 1 && (await page.evaluate(() => localStorage.getItem('editor.draft') === null)), 'corrupt draft: editor still opens and the bad draft is removed');
+  await page.evaluate(() => localStorage.setItem('editor.draft', '{not json'));
+  await page.reload();
+  await page.waitForSelector('#banner:not([hidden])', { timeout: 15000 });
+  check((await page.locator('#banner p').textContent()).includes('เสียหาย'), 'unparsable draft: Thai notice shown');
 
   // ---------- 7. stale base: 409 + reload + re-apply ----------
   await tab('texts');
@@ -265,7 +307,6 @@ try {
   // ---------- 8. page reload keeps the draft ----------
   await lf('เรื่องราว', 'en').fill('Draft that survives a reload');
   await page.waitForTimeout(600);
-  page.once('dialog', (d) => d.accept());
   await page.reload();
   await page.getByRole('button', { name: 'กู้คืนฉบับร่าง' }).waitFor({ timeout: 15000 });
   check(!(await page.locator('#banner p').textContent()).includes('เวอร์ชันเก่า'), 'reload offers the draft (same base, no warning)');
@@ -280,7 +321,6 @@ try {
     sessionStorage.setItem('editor.session', JSON.stringify(s));
   });
   // the in-memory token is what the app sends, so force it through a fresh load of the broken session
-  page.once('dialog', (d) => d.accept());
   await page.reload();
   await page.waitForSelector('input[type="password"]', { timeout: 15000 });
   check(await page.evaluate(() => localStorage.getItem('editor.draft') !== null), 'draft kept in localStorage when the session is rejected');

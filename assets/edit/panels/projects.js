@@ -1,4 +1,5 @@
-import { listEditor, lInput, textInput, imageInput, tagsConv, slugify } from '../ui.js';
+import { listEditor, lInput, textInput, imageInput, tagsConv } from '../ui.js';
+import { slugify } from '../util.js';
 
 export const id = 'projects';
 export const title = 'ผลงาน';

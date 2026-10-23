@@ -1,4 +1,4 @@
-import { cleanWorkerUrl } from '../api.js';
+import { cleanWorkerUrl } from '../util.js';
 import { el, button, nextId, labelText } from '../ui.js';
 
 export const id = 'settings';

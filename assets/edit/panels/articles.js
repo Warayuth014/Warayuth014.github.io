@@ -1,4 +1,5 @@
-import { el, button, lInput, textInput, imageInput, switchInput, confirmDialog, tagsConv, slugify } from '../ui.js';
+import { el, button, lInput, textInput, imageInput, switchInput, confirmDialog, tagsConv } from '../ui.js';
+import { autoSlug, today } from '../util.js';
 import { createRichText } from '../richtext.js';
 
 export const id = 'articles';
@@ -7,23 +8,6 @@ export const hint = 'Articles';
 
 let current = null; // the article object being edited (null = list view)
 const slugManual = new WeakSet(); // articles whose slug the owner typed by hand
-
-const today = () => {
-  const d = new Date();
-  const p = (n) => String(n).padStart(2, '0');
-  return `${d.getFullYear()}-${p(d.getMonth() + 1)}-${p(d.getDate())}`;
-};
-
-/** Slug from the English title; unique among the other articles; never "index". */
-export function autoSlug(a, articles) {
-  let base = slugify(a.title?.en);
-  if (!base && (a.title?.en || '').trim() === '' && (a.title?.th || '').trim() === '') return '';
-  if (!base) base = `post-${String(a.date || today()).replace(/-/g, '')}`;
-  if (base === 'index') base = 'index-post';
-  let slug = base;
-  for (let n = 2; articles.some((x) => x !== a && x.slug === slug); n += 1) slug = `${base.slice(0, 56)}-${n}`;
-  return slug;
-}
 
 export function render(root, ctx) {
   const articles = ctx.draft.articles;

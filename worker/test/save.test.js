@@ -74,7 +74,7 @@ test('stale baseSha: 409 with the exact message and no writes', async () => {
   e.gh.bump();
   const r = await save(e, { baseSha: head, site: site() });
   assert.equal(r.status, 409);
-  assert.deepEqual(r.json, { error: STALE });
+  assert.deepEqual(r.json, { error: STALE, code: 'conflict' });
   assert.equal(e.gh.writes().length, 0);
 });
 
@@ -83,7 +83,7 @@ test('head moving between the check and the ref update: 409 as well', async () =
   const head = (await state(e)).json.headSha;
   const r = await save(e, { baseSha: head, site: site() });
   assert.equal(r.status, 409);
-  assert.deepEqual(r.json, { error: STALE });
+  assert.deepEqual(r.json, { error: STALE, code: 'conflict' });
 });
 
 test('invalid site: 400 with errors and zero GitHub calls', async () => {

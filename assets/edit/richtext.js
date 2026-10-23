@@ -2,16 +2,9 @@
 // sanitizeRichText, so nothing the browser's editing commands produce can reach the repo unfiltered.
 import { sanitizeRichText, escapeHtml } from '../../shared/sanitize.js';
 import { el, askDialog, nextId, labelText } from './ui.js';
+import { normalizeEditorHtml } from './util.js';
 
 const SAFE_LINK = /^(https:\/\/[^\s/][^\s]*|mailto:[^\s]+)$/i;
-
-/** Browser output -> the tags the sanitizer allows (b/i/div are what execCommand tends to emit). */
-export function normalizeEditorHtml(html) {
-  return html
-    .replace(/<(\/?)b(?=[\s>])/gi, '<$1strong')
-    .replace(/<(\/?)i(?=[\s>])/gi, '<$1em')
-    .replace(/<(\/?)div(?=[\s>])/gi, '<$1p');
-}
 
 export function cleanValue(html) {
   const out = sanitizeRichText(normalizeEditorHtml(html));

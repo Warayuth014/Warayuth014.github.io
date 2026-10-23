@@ -145,6 +145,8 @@ npx wrangler dev --local --var SESSION_SECRET:ใส่อะไรก็ได�
 คำสั่งที่มี `--local` ใช้ที่เก็บข้อมูลจำลองในเครื่อง ไม่แตะของจริงบน Cloudflare
 ถ้าไม่ใส่ `--local` คำสั่ง `set-password.mjs` จะเขียนลงของจริงเสมอ
 
+ตัวแปร `GITHUB_API` (ใช้กับ `tools/fake-github.mjs` ตอนทดสอบ) มีไว้ทดสอบในเครื่องเท่านั้น ห้ามตั้งบน Worker จริง เพราะ GitHub token จะถูกส่งไปที่ที่อยู่นั้น
+
 ## เมื่อ GitHub token หมดอายุหรือรั่ว
 
 สร้าง token ใหม่ตามข้อ 1 แล้วรัน `npx wrangler secret put GITHUB_TOKEN` ใหม่ ไม่ต้อง deploy ซ้ำ
