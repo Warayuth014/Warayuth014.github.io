@@ -1,0 +1,171 @@
+{
+  "version": 1,
+  "theme": {
+    "bg1": "#0b0f1d",
+    "bg2": "#1d0f2e",
+    "accent1": "#7cf3ff",
+    "accent2": "#a98bff",
+    "accent3": "#ff6fd1",
+    "mode": "dark",
+    "fontPair": "default",
+    "effects": { "hero3d": true, "threads": true }
+  },
+  "nav": ["about", "projects", "skills", "journey", "articles", "contact"],
+  "sections": [
+    { "id": "hero", "visible": true },
+    { "id": "about", "visible": true },
+    { "id": "projects", "visible": true },
+    { "id": "skills", "visible": true },
+    { "id": "journey", "visible": true },
+    { "id": "articles", "visible": true },
+    { "id": "contact", "visible": true }
+  ],
+  "hero": {
+    "name": { "th": "Warayuth Bunbanlu", "en": "Warayuth Bunbanlu" },
+    "intro": {
+      "th": "กลางวันเขียนโค้ด กลางคืนเล่นเกม ผมชอบสร้างของที่ใช้งานได้จริง แล้วค่อย ๆ ขัดให้เนียน ยินดีต้อนรับเข้ามาดูโต๊ะทำงานของผมครับ",
+      "en": "Dev by day, gamer by night. I like building things that actually work, then polishing them bit by bit. Welcome to my desk."
+    },
+    "ctaWork": { "th": "ดูผลงาน", "en": "See my work" },
+    "ctaResume": { "th": "เรซูเม่", "en": "Résumé" }
+  },
+  "about": {
+    "photo": null,
+    "story": {
+      "th": "สวัสดีครับ ผมชื่อ Warayuth จบวิทยาการคอมพิวเตอร์ แล้วเริ่มทำงานเป็นนักพัฒนาซอฟต์แวร์ตั้งแต่ปี 2025 ผมสนุกกับการแปลงไอเดียให้กลายเป็นแอปและหน้าเว็บที่คนใช้ได้จริง ทั้งฝั่งหน้าบ้านและหลังบ้าน เวลาว่างผมชอบเล่นเกม ตีแบด และหัดทำโปรเจกต์เล็ก ๆ ไปเรื่อย ๆ เพื่อให้ฝีมือพัฒนาขึ้นทุกวัน",
+      "en": "Hi, I am Warayuth. I studied computer science and started working as a software developer in 2025. I enjoy turning ideas into apps and web pages people can really use, on both the front end and the back end. Outside of work I play games, play badminton, and keep building small side projects so I get a little better every day."
+    },
+    "facts": [
+      { "icon": "pin", "label": { "th": "ที่อยู่", "en": "Based in" }, "value": { "th": "กรุงเทพฯ ประเทศไทย", "en": "Bangkok, Thailand" } },
+      { "icon": "language", "label": { "th": "ภาษา", "en": "Languages" }, "value": { "th": "ไทย (ภาษาแม่), อังกฤษ (พื้นฐาน–ปานกลาง)", "en": "Thai (native), English (basic to intermediate)" } },
+      { "icon": "gamepad", "label": { "th": "งานอดิเรก", "en": "Hobbies" }, "value": { "th": "เล่นเกม, ตีแบดมินตัน", "en": "Gaming, badminton" } }
+    ]
+  },
+  "projects": [
+    {
+      "id": "followguide",
+      "title": { "th": "FollowGuide", "en": "FollowGuide" },
+      "summary": {
+        "th": "คู่มือทีละขั้นสำหรับเช็กว่าใครไม่ฟอลกลับบน Instagram",
+        "en": "A step-by-step guide to see who doesn't follow you back on Instagram"
+      },
+      "body": {
+        "th": "เว็บเล็ก ๆ ที่พาดาวน์โหลดข้อมูลบัญชี Instagram ของตัวเอง แล้วเทียบรายชื่อคนที่เราฟอลกับคนที่ฟอลเรา ให้เห็นว่าใครไม่ฟอลกลับหรือเพิ่งหายไป ประมวลผลบนเครื่องของผู้ใช้เอง",
+        "en": "A small web tool that walks you through downloading your own Instagram data, then compares who you follow with who follows you to show who doesn't follow back or has recently gone. Everything is processed on the user's own device."
+      },
+      "tags": ["HTML", "CSS", "JavaScript"],
+      "image": null,
+      "links": { "demo": "/ig-followguide/" }
+    },
+    {
+      "id": "gearupit",
+      "title": { "th": "GearUpIT", "en": "GearUpIT" },
+      "summary": {
+        "th": "โปรเจกต์ฝึกทำหน้าร้านค้าออนไลน์ จากบูทแคมป์ Frontend",
+        "en": "An e-commerce storefront built as practice in a front-end bootcamp"
+      },
+      "body": {
+        "th": "งานฝึกทำหน้าเว็บร้านขายอุปกรณ์ไอทีฝั่งหน้าบ้านล้วน ๆ จากบูทแคมป์ ใช้ฝึกจัดเลย์เอาต์ แสดงรายการสินค้า และเขียน JavaScript เบื้องต้น ยังไม่มีระบบหลังบ้านหรือการชำระเงินจริง",
+        "en": "A front-end-only IT gear shop page made during a bootcamp. I used it to practise layout, product listings and basic JavaScript. There is no real back end or payment."
+      },
+      "tags": ["HTML", "CSS", "JavaScript"],
+      "image": null,
+      "links": { "demo": "/projects/gearupit/" }
+    },
+    {
+      "id": "ariadne",
+      "title": { "th": "Ariadne", "en": "Ariadne" },
+      "summary": {
+        "th": "เครื่องมืออ่านโค้ด .NET แบบอ่านอย่างเดียว ตามรอยเส้นด้ายผ่านโค้ด",
+        "en": "A read-only code tracer for .NET solutions: follow the thread through the code"
+      },
+      "body": {
+        "th": "เครื่องมือที่ผมทำไว้ใช้เองสำหรับไล่ดูว่าโค้ดในโซลูชัน .NET (C# และ Razor) เรียกต่อกันอย่างไร อ่านอย่างเดียว ไม่แก้ไฟล์ใด ๆ ตอนนี้ยังเป็นโปรเจกต์ส่วนตัว จึงยังไม่มีลิงก์ให้เปิดดู",
+        "en": "A tool I built for my own use to trace how code in a .NET solution (C# and Razor) calls into other code. It is read-only and never edits files. It is still a private project, so there is no link to open yet."
+      },
+      "tags": ["C#", ".NET", "Razor"],
+      "image": null,
+      "links": {}
+    },
+    {
+      "id": "zero-to-senior-flutter-dotnet-course",
+      "title": { "th": "คอร์ส Flutter + .NET จากศูนย์", "en": "Flutter + .NET from zero course" },
+      "summary": {
+        "th": "บันทึกการเรียนรู้ทำแอป Flutter คู่กับ .NET ตั้งแต่พื้นฐาน",
+        "en": "My learning notes on building Flutter apps with a .NET back end, from the basics up"
+      },
+      "body": {
+        "th": "รวมตัวอย่างโค้ดและแบบฝึกหัดที่ผมเขียนตามระหว่างเรียนรู้การทำแอปมือถือด้วย Flutter ต่อกับ API ที่เขียนด้วย .NET เก็บไว้เปิดดูย้อนหลังและแชร์ให้คนที่กำลังเริ่มเหมือนกัน",
+        "en": "Code samples and exercises I wrote while learning to build mobile apps with Flutter that talk to a .NET API. Kept for my own reference and to share with others who are starting out too."
+      },
+      "tags": ["Flutter", "Dart", "C#", ".NET"],
+      "image": null,
+      "links": { "repo": "https://github.com/Warayuth014/zero-to-senior-flutter-dotnet-course" }
+    },
+    {
+      "id": "projecttdee",
+      "title": { "th": "ProjectTDEE", "en": "ProjectTDEE" },
+      "summary": {
+        "th": "เว็บเล็ก ๆ เกี่ยวกับ TDEE พลังงานที่ร่างกายใช้ต่อวัน",
+        "en": "A small web project about TDEE, the energy your body uses per day"
+      },
+      "body": {
+        "th": "โปรเจกต์ฝึกเขียนเว็บด้วย HTML และ JavaScript ที่เกี่ยวกับการคำนวณ TDEE เป็นงานเล็ก ๆ ที่ผมใช้ลองทำฟอร์มรับข้อมูลและแสดงผลลัพธ์",
+        "en": "A practice web project in HTML and JavaScript around calculating TDEE. A small piece where I tried out forms that take input and show a result."
+      },
+      "tags": ["HTML", "JavaScript"],
+      "image": null,
+      "links": { "repo": "https://github.com/Warayuth014/ProjectTDEE" }
+    },
+    {
+      "id": "sp333-cafe",
+      "title": { "th": "SP333 Cafe", "en": "SP333 Cafe" },
+      "summary": {
+        "th": "เว็บไซต์คาเฟ่ ทำเป็นงานฝึกด้วย HTML, CSS และ JavaScript",
+        "en": "A cafe website made as practice with HTML, CSS and JavaScript"
+      },
+      "body": {
+        "th": "งานฝึกทำเว็บไซต์ร้านคาเฟ่จากช่วงเรียน เน้นจัดหน้าให้สวยและใช้งานได้ทั้งบนมือถือและคอมพิวเตอร์",
+        "en": "A cafe website I made as practice during my studies, focused on a tidy layout that works on both phones and desktops."
+      },
+      "tags": ["HTML", "CSS", "JavaScript"],
+      "image": null,
+      "links": { "repo": "https://github.com/Warayuth014/SP333_CAFE" }
+    }
+  ],
+  "skills": [
+    { "group": { "th": "มือถือ / หน้าเว็บ", "en": "Mobile / Frontend" }, "items": ["Flutter", "Dart", "HTML", "CSS", "JavaScript"] },
+    { "group": { "th": "หลังบ้าน", "en": "Backend" }, "items": ["C#", ".NET", "ASP.NET Core", "REST API"] },
+    { "group": { "th": "ข้อมูล", "en": "Data" }, "items": ["SQL"] },
+    { "group": { "th": "เครื่องมือ", "en": "Tools" }, "items": ["Git", "GitHub", "PowerShell", "VS Code"] }
+  ],
+  "journey": [
+    {
+      "when": { "th": "2025", "en": "2025" },
+      "title": { "th": "วิทยาศาสตรบัณฑิต สาขาวิทยาการคอมพิวเตอร์", "en": "B.Sc. in Computer Science" },
+      "place": { "th": "มหาวิทยาลัยหอการค้าไทย", "en": "University of the Thai Chamber of Commerce" }
+    },
+    {
+      "when": { "th": "ม.ค. – เม.ย. 2025", "en": "Jan – Apr 2025" },
+      "title": { "th": "งานพัฒนาซอฟต์แวร์", "en": "Software development" },
+      "place": { "th": "Jupiter Software", "en": "Jupiter Software" }
+    },
+    {
+      "when": { "th": "ก.ย. 2025 – ปัจจุบัน", "en": "Sep 2025 – present" },
+      "title": { "th": "งานพัฒนาซอฟต์แวร์", "en": "Software development" },
+      "place": { "th": "ACETEC Technology", "en": "ACETEC Technology" }
+    }
+  ],
+  "contact": {
+    "email": "b.warayuth@gmail.com",
+    "phone": null,
+    "links": [
+      { "kind": "github", "url": "https://github.com/Warayuth014" },
+      { "kind": "linkedin", "url": "https://www.linkedin.com/in/warayut-bunbanlu-1b621b301/" },
+      { "kind": "facebook", "url": "https://www.facebook.com/warayut.bunbanlu/" },
+      { "kind": "instagram", "url": "https://www.instagram.com/_wryh._" }
+    ]
+  },
+  "resume": { "file": null, "kind": null },
+  "workerUrl": ""
+}
