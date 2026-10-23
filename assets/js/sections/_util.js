@@ -53,10 +53,7 @@ export function safeHref(u) {
   return '';
 }
 
-export function safeAsset(p) {
-  if (typeof p !== 'string' || p.includes('..') || /[\s\u0000-\u001f\\]/.test(p)) return '';
-  return /^\/(uploads|projects)\/[^/]/.test(p) ? p : '';
-}
+export { safeAsset } from '../../../shared/schema.js';
 
 export function anchorAttrs(u) {
   return /^https:/i.test(u) ? ' target="_blank" rel="noopener noreferrer"' : '';

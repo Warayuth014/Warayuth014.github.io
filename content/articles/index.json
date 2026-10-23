@@ -1,0 +1,19 @@
+[
+  {
+    "slug": "welcome",
+    "title": {
+      "th": "ยินดีต้อนรับสู่โต๊ะทำงานของผม",
+      "en": "Welcome to my desk"
+    },
+    "summary": {
+      "th": "เว็บนี้คืออะไร และผมตั้งใจจะเขียนอะไรลงที่นี่",
+      "en": "What this site is, and what I plan to write about here."
+    },
+    "tags": [
+      "hello",
+      "notes"
+    ],
+    "cover": null,
+    "date": "2026-10-24"
+  }
+]
