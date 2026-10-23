@@ -1,6 +1,6 @@
 import { test } from 'node:test';
 import assert from 'node:assert/strict';
-import { sameOriginPath, safeHref, safeAsset } from '../assets/js/sections/_util.js';
+import { sameOriginPath, safeHref, safeAsset } from '../assets/js/sections/util.js';
 
 const O = 'https://warayuth014.github.io';
 

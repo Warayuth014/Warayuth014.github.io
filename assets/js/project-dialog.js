@@ -2,7 +2,7 @@
 // One dialog lives on <body>, outside the re-rendered sections, so a language toggle or a preview
 // message can refill it without losing focus. Deep link: #project-<id>.
 import { t } from '../../shared/i18n.js';
-import { ui } from './sections/_util.js';
+import { ui } from './sections/util.js';
 import { projectDetailHtml, isDeepLinkId, projectHash, projectIdFromHash } from './sections/projects.js';
 
 const st = { content: null, lang: 'en', index: -1, id: '', dlg: null, body: null, closeBtn: null, wired: false };

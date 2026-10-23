@@ -1,6 +1,6 @@
 // Résumé page: shows the PDF or image chosen in /edit, or a friendly "coming soon" state.
 import { escapeHtml } from '../../shared/sanitize.js';
-import { safeAsset, sameOriginPath } from './sections/_util.js';
+import { safeAsset, sameOriginPath } from './sections/util.js';
 import { applyTheme } from './theme.js';
 
 const TEXT = {

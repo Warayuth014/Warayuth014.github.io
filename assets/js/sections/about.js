@@ -1,6 +1,6 @@
 import { escapeHtml } from '../../../shared/sanitize.js';
 import { t } from '../../../shared/i18n.js';
-import { ui, shell, list, safeAsset, icon } from './_util.js';
+import { ui, shell, list, safeAsset, icon } from './util.js';
 
 export function render(el, content, lang) {
   const a = content.about ?? {};

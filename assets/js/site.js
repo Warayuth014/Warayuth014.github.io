@@ -3,7 +3,7 @@
 import { t, detectLang } from '../../shared/i18n.js';
 import { validateSite, SECTION_IDS } from '../../shared/schema.js';
 import { escapeHtml } from '../../shared/sanitize.js';
-import { ui, pad, list, sameOriginPath } from './sections/_util.js';
+import { ui, pad, list, sameOriginPath } from './sections/util.js';
 import * as hero from './sections/hero.js';
 import * as about from './sections/about.js';
 import * as projects from './sections/projects.js';

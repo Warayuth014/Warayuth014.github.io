@@ -1,6 +1,6 @@
 import { escapeHtml } from '../../../shared/sanitize.js';
 import { t } from '../../../shared/i18n.js';
-import { shell, list } from './_util.js';
+import { shell, list } from './util.js';
 
 export function render(el, content, lang) {
   const rows = list(content.skills).map((g) => `

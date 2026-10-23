@@ -1,5 +1,5 @@
 import { escapeHtml } from '../../../shared/sanitize.js';
-import { ui, shell, list, safeHref, anchorAttrs, icon, linkLabel } from './_util.js';
+import { ui, shell, list, safeHref, anchorAttrs, icon, linkLabel } from './util.js';
 
 export function render(el, content, lang) {
   const c = content.contact ?? {};

@@ -1,6 +1,6 @@
 import { escapeHtml } from '../../../shared/sanitize.js';
 import { t } from '../../../shared/i18n.js';
-import { ui, shell, list, safeHref, safeAsset, anchorAttrs } from './_util.js';
+import { ui, shell, list, safeHref, safeAsset, anchorAttrs } from './util.js';
 
 const ID_RE = /^[a-z0-9-]{1,60}$/;
 

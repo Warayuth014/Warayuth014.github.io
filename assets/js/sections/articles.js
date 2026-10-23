@@ -1,6 +1,6 @@
 import { escapeHtml } from '../../../shared/sanitize.js';
 import { t } from '../../../shared/i18n.js';
-import { ui, shell, list } from './_util.js';
+import { ui, shell, list } from './util.js';
 
 const SLUG_RE = /^[a-z0-9-]{1,60}$/;
 const LATEST = 3;
