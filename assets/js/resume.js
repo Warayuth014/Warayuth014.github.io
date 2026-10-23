@@ -1,10 +1,11 @@
 // Résumé page: shows the PDF or image chosen in /edit, or a friendly "coming soon" state.
 import { escapeHtml } from '../../shared/sanitize.js';
 import { safeAsset, sameOriginPath } from './sections/_util.js';
+import { applyTheme } from './theme.js';
 
 const TEXT = {
   download: { th: 'ดาวน์โหลดเรซูเม่', en: 'Download résumé' },
-  alt: { th: 'เรซูเม่ของวรยุทธ', en: "Warayuth's résumé" },
+  alt: { th: 'เรซูเม่ของ Warayuth', en: "Warayuth's résumé" },
   fallback: { th: 'เบราว์เซอร์นี้แสดง PDF ในหน้าไม่ได้ กดดาวน์โหลดเพื่อเปิดดูได้เลย', en: 'This browser cannot show the PDF inline. Use the download button to open it.' },
   soon: { th: 'เร็ว ๆ นี้', en: 'Coming soon' },
   soonSub: { th: 'เรซูเม่กำลังจัดให้เรียบร้อย ไว้กลับมาดูใหม่นะครับ', en: 'My résumé is still being put together. Please check back soon.' },
@@ -14,7 +15,7 @@ const TEXT = {
 };
 const tx = (k, lang) => TEXT[k][lang];
 
-const state = { resume: undefined, lang: document.documentElement.lang === 'th' ? 'th' : 'en' };
+const state = { resume: undefined, lang: 'en' };
 
 function soon(lang) {
   return `<div class="resume-soon">
@@ -54,6 +55,7 @@ async function load() {
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const site = await res.json();
     state.resume = site && typeof site.resume === 'object' && site.resume ? site.resume : { file: null, kind: null };
+    try { applyTheme(site?.theme); } catch { /* default theme */ }
   } catch {
     state.resume = null;
   }
@@ -61,6 +63,7 @@ async function load() {
 }
 
 if (typeof document !== 'undefined' && document.getElementById('resume-body')) {
+  state.lang = document.documentElement.lang === 'th' ? 'th' : 'en';
   document.getElementById('lang-toggle')?.addEventListener('click', () => {
     state.lang = state.lang === 'th' ? 'en' : 'th';
     try { localStorage.setItem('lang', state.lang); } catch { /* storage blocked */ }

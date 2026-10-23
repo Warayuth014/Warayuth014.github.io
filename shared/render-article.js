@@ -92,6 +92,7 @@ ${head}
 ${main}
   <footer class="site-foot mono"><span>&copy; ${escapeHtml(name)}</span></footer>
   <script>${TOGGLE}</script>
+  <script type="module" src="/assets/js/page-theme.js"></script>
 </body>
 </html>
 `;
@@ -125,7 +126,7 @@ ${summary ? `      <p class="post-lead">${escapeHtml(summary)}</p>\n` : ''}${cov
     `  <link rel="canonical" href="${url}">`,
     '  <meta property="og:type" content="article">',
     `  <meta property="og:title" content="${escapeHtml(title('th'))}">`,
-    `  <meta property="og:description" content="${escapeHtml(desc)}">`,
+    ...(desc ? [`  <meta property="og:description" content="${escapeHtml(desc)}">`] : []),
     `  <meta property="og:url" content="${url}">`,
     ...(cover ? [`  <meta property="og:image" content="${SITE_ORIGIN}${escapeHtml(cover)}">`] : []),
   ].join('\n');

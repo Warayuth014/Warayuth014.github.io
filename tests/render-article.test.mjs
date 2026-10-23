@@ -2,7 +2,7 @@ import { test } from 'node:test';
 import assert from 'node:assert/strict';
 import { renderArticlePage, renderArticleList, articleIndex } from '../shared/render-article.js';
 
-const SITE = { hero: { name: { th: 'วรยุทธ', en: 'Warayuth Bunbanlu' } } };
+const SITE = { hero: { name: { th: 'Warayuth', en: 'Warayuth Bunbanlu' } } };
 const BASE = 'https://warayuth014.github.io';
 
 const art = (over = {}) => ({
@@ -65,6 +65,16 @@ test('empty EN side falls back to TH for title, summary and body', () => {
   }), SITE);
   const en = html.slice(html.indexOf('<article lang="en"'));
   assert.ok(en.includes('ชื่อไทย') && en.includes('เฉพาะไทย') && en.includes('สรุปไทยล้วน'));
+});
+
+test('og:description and description omitted when the summary is empty', () => {
+  const html = renderArticlePage(art({ summary: { th: '', en: '' } }), SITE);
+  assert.ok(!html.includes('og:description') && !html.includes('name="description"'));
+  assert.ok(renderArticlePage(art(), SITE).includes('og:description'));
+});
+
+test('loads the theme module', () => {
+  assert.ok(renderArticlePage(art(), SITE).includes('<script type="module" src="/assets/js/page-theme.js"></script>'));
 });
 
 test('TH side empty: default description and og:title fall back to EN', () => {
