@@ -1,7 +1,7 @@
 // Durable Object (SQLite-backed, one instance) that owns the login attempt counters.
 // Every attempt is serialised through this object and RESERVED (counted) before the slow password
 // check runs, so parallel guesses cannot all see "count 0": at most 5 checks per IP per 15 minutes
-// and at most 51 per hour overall ever reach the password check. A correct password releases its
+// at most 51 per hour and 151 per UTC day overall ever reach the password check. A correct password releases its
 // reservation, so successes cost nothing.
 //   POST /attempt {ip, now, epoch} -> {locked:false} | {locked:true, retryAfter}
 //   POST /release {ip, now}        -> {}
@@ -9,7 +9,9 @@
 export const IP_LIMIT = 5;
 export const IP_WINDOW_MS = 15 * 60 * 1000;
 export const GLOBAL_LIMIT = 50;
+export const DAILY_LIMIT = 150; // failed attempts per UTC day, all IPs together
 const HOUR_MS = 60 * 60 * 1000;
+const DAY_MS = 24 * HOUR_MS;
 const SWEEP_MS = 15 * 60 * 1000;
 
 const secondsUntil = (ms, now) => Math.max(1, Math.ceil((ms - now) / 1000));
@@ -61,8 +63,14 @@ export class LoginGuard {
     const gCount = g && g.hour === hour ? g.count : 0;
     if (gCount > GLOBAL_LIMIT) return { locked: true, retryAfter: secondsUntil((hour + 1) * HOUR_MS, now) };
 
+    const day = Math.floor(now / DAY_MS);
+    const d = await this.storage.get('daily');
+    const dCount = d && d.day === day ? d.count : 0;
+    if (dCount > DAILY_LIMIT) return { locked: true, retryAfter: secondsUntil((day + 1) * DAY_MS, now) };
+
     await this.storage.put(key, { count: (live ? cur.count : 0) + 1, reset: live ? cur.reset : now + IP_WINDOW_MS });
     await this.storage.put('global', { hour, count: gCount + 1 });
+    await this.storage.put('daily', { day, count: dCount + 1 });
     return { locked: false };
   }
 
@@ -75,6 +83,8 @@ export class LoginGuard {
     }
     const g = await this.storage.get('global');
     if (g && g.hour === Math.floor(now / HOUR_MS) && g.count > 0) await this.storage.put('global', { ...g, count: g.count - 1 });
+    const d = await this.storage.get('daily');
+    if (d && d.day === Math.floor(now / DAY_MS) && d.count > 0) await this.storage.put('daily', { ...d, count: d.count - 1 });
     return {};
   }
 }

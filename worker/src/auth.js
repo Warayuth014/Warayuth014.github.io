@@ -1,7 +1,7 @@
 // Password hashing (PBKDF2-SHA256) and signed sessions (HMAC-SHA256). WebCrypto only.
 const enc = new TextEncoder();
 
-export const HASH_ITERATIONS = 210000;
+export const HASH_ITERATIONS = 100000; // new hashes only; verify reads the count from the stored string
 export const SESSION_SECONDS = 2 * 60 * 60;
 
 export function toB64(bytes) {

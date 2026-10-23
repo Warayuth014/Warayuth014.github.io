@@ -8,6 +8,7 @@ import { githubClient, GitHubError } from './github.js';
 
 export const STALE_MESSAGE = 'มีคนบันทึกก่อนหน้า กดโหลดใหม่';
 const BAD_PASSWORD = 'รหัสไม่ถูกต้อง';
+const HASH_ERROR = { error: 'ระบบตรวจรหัสขัดข้อง', code: 'hash_error' };
 
 export const MAX_SAVE_BYTES = 2 * 1024 * 1024;
 export const MAX_UPLOAD_BYTES = 8 * 1024 * 1024;
@@ -63,7 +64,14 @@ async function checkPassword(ctx, password) {
     await releaseAttempt(ctx.env, ip, ctx.now());
     return reply(503, { error: 'ยังไม่ได้ตั้งรหัสผ่าน (ดู worker/README.th.md)' });
   }
-  if (typeof password === 'string' && password.length > 0 && password.length <= 128 && (await verifyPassword(password, stored))) {
+  let ok = false;
+  try {
+    ok = typeof password === 'string' && password.length > 0 && password.length <= 128 && (await verifyPassword(password, stored));
+  } catch {
+    await releaseAttempt(ctx.env, ip, ctx.now()); // the platform failed, not the guess
+    return reply(500, HASH_ERROR);
+  }
+  if (ok) {
     await releaseAttempt(ctx.env, ip, ctx.now());
     return null;
   }
@@ -85,7 +93,13 @@ export async function changePassword(ctx) {
   if (refused) return refused;
   const next = ctx.body?.next;
   if (typeof next !== 'string' || next.length < 6 || next.length > 128) return bad('รหัสใหม่ต้องยาว 6 ถึง 128 ตัวอักษร');
-  await ctx.env.STATE.put('pw:hash', await hashPassword(next));
+  let hash;
+  try {
+    hash = await hashPassword(next);
+  } catch {
+    return reply(500, HASH_ERROR);
+  }
+  await ctx.env.STATE.put('pw:hash', hash);
   await ctx.env.STATE.put('pw:ver', await nextVer(ctx.env)); // every older session stops working
   return reply(200, await newSession(ctx));
 }

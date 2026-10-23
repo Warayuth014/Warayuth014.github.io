@@ -10,7 +10,7 @@ test('hash format and verification', async () => {
   assert.equal(await verifyPassword('abcdef', h), true);
   assert.equal(await verifyPassword('abcdeg', h), false);
   assert.equal(await verifyPassword('abcdef', 'garbage'), false);
-  assert.match(await hashPassword('x'), /^pbkdf2-sha256\$210000\$/);
+  assert.match(await hashPassword('x'), /^pbkdf2-sha256\$100000\$/);
 });
 
 test('session token: tamper, expiry, version', async () => {
@@ -74,6 +74,46 @@ test('more than 50 failures in an hour lock everyone until the hour ends', async
   assert.ok(res.json.retryAfter <= 3600);
   clock.t += 3600 * 1000;
   assert.equal((await login(env, PIN, { ip: '77.7.7.7' })).status, 200);
+});
+
+test('more than 150 failures in a UTC day lock everyone until the day ends', async () => {
+  const { env, clock } = await makeEnv(); // clock starts 10:00 UTC
+  for (let h = 0; h < 3; h += 1) {
+    for (let i = 0; i < 50; i += 1) await login(env, 'bad', { ip: `10.${h}.0.${i}` });
+    clock.t += 3600 * 1000; // new hour, so the hourly cap resets
+  }
+  assert.equal((await login(env, 'bad', { ip: '10.9.0.1' })).status, 401, '151st failure still reaches the check');
+  const res = await login(env, PIN, { ip: '77.7.7.7' });
+  assert.equal(res.status, 429);
+  assert.ok(res.json.retryAfter > 3600 && res.json.retryAfter <= 11 * 3600);
+  clock.t += 11 * 3600 * 1000; // next UTC day
+  assert.equal((await login(env, PIN, { ip: '77.7.7.7' })).status, 200);
+});
+
+test('daily lock is cleared by the owner reset (epoch)', async () => {
+  const { env, clock, kv } = await makeEnv();
+  for (let h = 0; h < 4; h += 1) {
+    for (let i = 0; i < 50; i += 1) await login(env, 'bad', { ip: `10.${h}.0.${i}` });
+    clock.t += 3600 * 1000;
+  }
+  assert.equal((await login(env, PIN, { ip: '77.7.7.7' })).status, 429);
+  await kv.put('locks:epoch', 'reset-day');
+  assert.equal((await login(env, PIN, { ip: '77.7.7.7' })).status, 200);
+});
+
+test('a failing PBKDF2 derive is a 500 hash_error and the reserved attempt is released', async () => {
+  const { env } = await makeEnv();
+  const real = crypto.subtle.deriveBits;
+  crypto.subtle.deriveBits = async () => { throw new Error('iterations refused'); };
+  let res;
+  try {
+    res = await login(env, PIN);
+  } finally {
+    crypto.subtle.deriveBits = real;
+  }
+  assert.equal(res.status, 500);
+  assert.equal(res.json.code, 'hash_error');
+  for (let i = 0; i < 5; i += 1) assert.equal((await login(env, 'bad')).status, 401, 'budget intact');
 });
 
 test('exactly 50 global failures do not lock', async () => {

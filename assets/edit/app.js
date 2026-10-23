@@ -594,7 +594,7 @@ function showLogin(message = '') {
   const submit = button('เข้าสู่ระบบ', null, { type: 'submit', cls: 'primary' });
   const form = el('form', { class: 'login card' },
     el('h1', { text: 'แก้ไขเว็บ' }),
-    el('p', { class: 'note', text: 'ใส่รหัส PIN เพื่อเข้าแก้ไขเว็บของคุณ' }),
+    el('p', { class: 'note', text: 'ใส่รหัส PIN เพื่อเข้าแก้ไขเว็บของคุณ (แนะนำ PIN อย่างน้อย 8 ตัวอักษร ไม่ใช่ตัวเลขล้วน)' }),
     el('div', { class: 'field' }, el('label', { for: pwId }, labelText('รหัส PIN', 'PIN')), pw),
     el('details', { class: 'worker-url', open: !workerUrl() },
       el('summary', { text: 'ตั้งค่า Worker URL' }),
