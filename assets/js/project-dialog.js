@@ -5,7 +5,7 @@ import { t } from '../../shared/i18n.js';
 import { ui } from './sections/_util.js';
 import { projectDetailHtml, isDeepLinkId, projectHash, projectIdFromHash } from './sections/projects.js';
 
-const st = { content: null, lang: 'en', index: -1, dlg: null, body: null, closeBtn: null, wired: false };
+const st = { content: null, lang: 'en', index: -1, id: '', dlg: null, body: null, closeBtn: null, wired: false };
 
 const projects = () => (Array.isArray(st.content?.projects) ? st.content.projects : []);
 const supported = () => typeof HTMLDialogElement === 'function' && typeof HTMLDialogElement.prototype.showModal === 'function';
@@ -56,11 +56,12 @@ function setHash(h) {
 }
 
 function onClose() {
-  const idx = st.index;
+  const { index, id } = st;
   st.index = -1;
-  const closedId = projects()[idx]?.id;
-  if (closedId && location.hash === projectHash(closedId)) setHash(''); // only the hash this dialog set
-  const btn = document.querySelector(`.card-open[data-i="${idx}"]`);
+  st.id = '';
+  // the hash this dialog set, taken from the id it was opened with (content may have changed since)
+  if (id && location.hash === projectHash(id)) setHash('');
+  const btn = (id && document.querySelector(`.card[data-project-id="${id}"] .card-open`)) || document.querySelector(`.card-open[data-i="${index}"]`);
   btn?.focus();
 }
 
@@ -68,6 +69,7 @@ function open(index) {
   if (!supported() || !projects()[index]) return;
   build();
   st.index = index;
+  st.id = isDeepLinkId(projects()[index].id) ? projects()[index].id : '';
   fill();
   if (!st.dlg.open) st.dlg.showModal();
   st.closeBtn.focus();
@@ -101,8 +103,10 @@ export function syncProjectDialog(content, lang) {
   st.lang = lang;
   wire();
   if (st.dlg?.open) {
-    const p = projects()[st.index];
-    if (!p) { st.dlg.close(); return; }
+    // follow the project by id: an edit may have reordered or removed projects before it
+    const idx = st.id ? projects().findIndex((p) => p?.id === st.id) : st.index;
+    if (idx < 0 || !projects()[idx]) { st.dlg.close(); return; }
+    st.index = idx;
     fill();
     return;
   }

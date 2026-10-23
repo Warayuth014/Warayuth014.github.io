@@ -332,13 +332,12 @@ html:has(dialog.proj-dialog[open]) { overflow: hidden; }
   @keyframes proj-in { from { opacity: 0; transform: translateY(10px); } }
 }
 
-/* skills: playful hover, mirrored on keyboard focus (decorative only, no hover-only information) */
-.chips li:hover, .chips li:focus-visible, .skill-row:focus-within .chips li { border-color: var(--accent2); }
-.chips li:hover, .chips li:focus-visible { transform: translateY(-2px) rotate(-1.5deg); background: color-mix(in srgb, var(--accent2) 14%, var(--card)); box-shadow: 0 6px 18px color-mix(in srgb, var(--accent2) 22%, transparent); }
-.chips li:nth-child(even):hover, .chips li:nth-child(even):focus-visible { transform: translateY(-2px) rotate(1.5deg); }
-.skill-row:hover h3, .skill-row:focus-within h3 { color: var(--accent1); }
+/* skills: playful hover (decorative; chips are not interactive, so nothing is hover-only information) */
+.chips li:hover { border-color: var(--accent2); transform: translateY(-2px) rotate(-1.5deg); background: color-mix(in srgb, var(--accent2) 14%, var(--card)); box-shadow: 0 6px 18px color-mix(in srgb, var(--accent2) 22%, transparent); }
+.chips li:nth-child(even):hover { transform: translateY(-2px) rotate(1.5deg); }
+.skill-row:hover h3 { color: var(--accent1); }
 @media (prefers-reduced-motion: reduce) {
-  .chips li:hover, .chips li:focus-visible, .chips li:nth-child(even):hover, .chips li:nth-child(even):focus-visible { transform: none; }
+  .chips li:hover, .chips li:nth-child(even):hover { transform: none; }
 }
 
 /* journey: scroll-progress line (fully drawn when --p is never set: no JS or reduced motion) */

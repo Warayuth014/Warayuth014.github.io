@@ -14,11 +14,20 @@
   <style>
     html:lang(th) [lang="en"], html:lang(en) [lang="th"] { display: none; }
   </style>
-  <script type="module">
-    import { detectLang } from '/shared/i18n.js';
-    const lang = detectLang();
-    document.documentElement.lang = lang;
-    document.title = lang === 'th' ? '404 | ไม่พบหน้านี้' : '404 | Page not found';
+  <script>
+    // runs before first paint: pick the language so English visitors never see the Thai text
+    (function () {
+      var lang = 'en';
+      try {
+        var stored = localStorage.getItem('lang');
+        if (stored === 'th' || stored === 'en') lang = stored;
+        else if (/^th/i.test(navigator.language || '')) lang = 'th';
+      } catch (e) {
+        if (/^th/i.test(navigator.language || '')) lang = 'th';
+      }
+      document.documentElement.lang = lang;
+      document.title = lang === 'th' ? '404 | ไม่พบหน้านี้' : '404 | Page not found';
+    })();
   </script>
 </head>
 <body class="page-404">

@@ -156,6 +156,31 @@ try {
     await ctx.close();
   }
 
+  // ---------- preview re-render while a dialog is open ----------
+  {
+    const { ctx, page } = await newPage({ viewport: { width: 1366, height: 800 } });
+    await page.goto(`${base}/?preview=1`, { waitUntil: 'load' });
+    const site = await page.evaluate(() => fetch('/content/site.json').then((r) => r.json()));
+    const send = async (content) => {
+      await page.evaluate((c) => window.postMessage({ type: 'preview', content: c }, location.origin), content);
+      await page.waitForTimeout(400);
+    };
+    await send(site);
+    await page.waitForSelector('.card-open');
+    await page.evaluate(() => document.querySelector('.card[data-project-id="gearupit"] .card-open').click());
+    let s = await dialogState(page);
+    check(s.open && s.title === 'GearUpIT' && s.hash === '#project-gearupit', 'preview: project B open');
+    await send({ ...site, projects: site.projects.filter((p) => p.id !== 'followguide') }); // removes A, which is before B
+    s = await dialogState(page);
+    check(s.open && s.title === 'GearUpIT' && s.hash === '#project-gearupit', 'preview: removing an earlier project keeps showing B');
+    await send({ ...site, projects: site.projects.filter((p) => p.id !== 'followguide' && p.id !== 'gearupit') });
+    await page.waitForFunction(() => !document.querySelector('dialog.proj-dialog')?.open);
+    await page.waitForFunction(() => location.hash === '', null, { timeout: 3000 }).catch(() => {});
+    s = await dialogState(page);
+    check(!s.open && s.hash === '', 'preview: removing B closes the dialog and clears the hash');
+    await ctx.close();
+  }
+
   // ---------- normal motion: reveal / tilt / glow / idempotency ----------
   {
     const { ctx, page } = await newPage({ viewport: { width: 1366, height: 800 } });
@@ -196,7 +221,7 @@ try {
     await page.mouse.move(2, 2);
     await page.waitForTimeout(100);
     check(await page.evaluate(() => document.querySelector('.card').style.transform === ''), 'tilt: transform cleared on leave');
-    check(await page.evaluate(() => getComputedStyle(document.querySelector('.cursor-glow')).opacity !== '0' || document.querySelector('.cursor-glow').classList.contains('on') || true), 'glow: element present');
+    check(await page.evaluate(() => document.querySelectorAll('.cursor-glow').length === 1), 'glow: element present on a fine pointer');
     // re-render several times: nothing stacks
     for (let i = 0; i < 4; i++) await page.evaluate(() => document.querySelector('.lang-btn').click());
     const stacked = await page.evaluate(() => ({ glow: document.querySelectorAll('.cursor-glow').length }));
@@ -263,7 +288,7 @@ try {
       };
     });
     check(r.hoverOnly.length === 0, `mobile: no hover-only visibility rules ${r.hoverOnly.join(', ')}`);
-    check(r.glow === 0, 'mobile: no cursor glow');
+    check(r.glow === 0, 'mobile (coarse pointer): no cursor glow');
     check(!r.overflow, 'mobile: no horizontal overflow');
     await page.evaluate(() => document.querySelector('#projects').scrollIntoView());
     await page.waitForTimeout(500);
