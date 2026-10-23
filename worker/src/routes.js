@@ -271,13 +271,14 @@ export async function upload(ctx) {
 
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
+  if (typeof b.baseSha === 'string' && b.baseSha !== head.commitSha) return reply(409, { error: STALE_MESSAGE });
   try {
-    await gh.commit(head, [{ path: rel, base64: b.dataBase64 }], `upload: ${rel.split('/').pop()}`);
+    const commitSha = await gh.commit(head, [{ path: rel, base64: b.dataBase64 }], `upload: ${rel.split('/').pop()}`);
+    return reply(200, { path: `/${rel}`, commitSha });
   } catch (e) {
     if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE });
     throw e;
   }
-  return reply(200, { path: `/${rel}` });
 }
 
 export async function deleteUpload(ctx) {
@@ -287,13 +288,14 @@ export async function deleteUpload(ctx) {
   if (!pathAllowed(rel)) return bad('path ไม่ถูกต้อง');
   const gh = githubClient(ctx.env);
   const head = await gh.getHead();
+  if (typeof ctx.body.baseSha === 'string' && ctx.body.baseSha !== head.commitSha) return reply(409, { error: STALE_MESSAGE });
   const files = await gh.getFiles(head.treeSha);
   if (!files.has(rel)) return reply(404, { error: 'ไม่พบไฟล์นี้' });
   try {
-    await gh.commit(head, [{ path: rel, delete: true }], `delete upload: ${rel.split('/').pop()}`);
+    const commitSha = await gh.commit(head, [{ path: rel, delete: true }], `delete upload: ${rel.split('/').pop()}`);
+    return reply(200, { ok: true, commitSha });
   } catch (e) {
     if (e instanceof GitHubError && e.conflict) return reply(409, { error: STALE_MESSAGE });
     throw e;
   }
-  return reply(200, { ok: true });
 }

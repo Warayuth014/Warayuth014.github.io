@@ -2,7 +2,7 @@
 // errors carry the HTTP status, never the response body.
 import { toB64 } from './auth.js';
 
-const API = 'https://api.github.com';
+const DEFAULT_API = 'https://api.github.com';
 
 export class GitHubError extends Error {
   constructor(status) {
@@ -24,13 +24,15 @@ const CONTENT_QUERY = `query($owner:String!,$name:String!,$arts:String!,$site:St
 
 export function githubClient(env) {
   const doFetch = env.GITHUB_FETCH ?? ((...a) => globalThis.fetch(...a));
+  // GITHUB_API is only ever set for local testing against tools/fake-github.mjs
+  const API = typeof env.GITHUB_API === 'string' && env.GITHUB_API !== '' ? env.GITHUB_API.replace(/\/+$/, '') : DEFAULT_API;
   const base = `${API}/repos/${env.REPO}`;
   const branch = env.BRANCH || 'main';
 
   async function call(method, path, body) {
     let res;
     try {
-      res = await doFetch(path.startsWith('https://') ? path : `${base}${path}`, {
+      res = await doFetch(/^https?:\/\//.test(path) ? path : `${base}${path}`, {
         method,
         headers: {
           Authorization: `Bearer ${env.GITHUB_TOKEN}`,

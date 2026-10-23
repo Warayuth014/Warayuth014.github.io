@@ -85,3 +85,27 @@ test('/delete-upload: deletes in one commit, 404 when absent, rejects other path
   }
   assert.ok(e.gh.text('content/site.json'));
 });
+
+test('/upload and /delete-upload return the new head as commitSha', async () => {
+  const e = await setup();
+  const up1 = await up(e, send('a.png', 'image/png', PNG));
+  assert.equal(up1.json.commitSha, e.gh.head);
+  const del = await call(e.env, 'POST', '/delete-upload', { token: e.tok, body: { path: up1.json.path } });
+  assert.equal(del.json.commitSha, e.gh.head);
+});
+
+test('an optional baseSha that is no longer the head is refused with 409 and nothing is written', async () => {
+  const e = await setup();
+  const stale = e.gh.head;
+  e.gh.bump();
+  const r = await up(e, { ...send('a.png', 'image/png', PNG), baseSha: stale });
+  assert.equal(r.status, 409);
+  assert.equal(e.gh.writes().length, 0);
+  const ok = await up(e, { ...send('a.png', 'image/png', PNG), baseSha: e.gh.head });
+  assert.equal(ok.status, 200);
+  const stale2 = e.gh.head;
+  e.gh.bump();
+  const del = await call(e.env, 'POST', '/delete-upload', { token: e.tok, body: { path: ok.json.path, baseSha: stale2 } });
+  assert.equal(del.status, 409);
+  assert.ok(e.gh.text(ok.json.path.slice(1)) !== undefined);
+});

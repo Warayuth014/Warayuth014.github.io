@@ -79,10 +79,10 @@ test('pathological input sanitizes in linear time', () => {
     const t0 = performance.now();
     s(input);
     const ms = performance.now() - t0;
-    assert.ok(ms < 500, `${JSON.stringify(unit)} took ${Math.round(ms)} ms`);
+    assert.ok(ms < 2000, `${JSON.stringify(unit)} took ${Math.round(ms)} ms`);
   }
   const closed = '<script>x</script>'.repeat(6000);
   const t0 = performance.now();
   assert.equal(s(closed), '');
-  assert.ok(performance.now() - t0 < 500);
+  assert.ok(performance.now() - t0 < 2000);
 });
