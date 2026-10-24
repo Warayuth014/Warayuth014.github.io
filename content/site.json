@@ -3,7 +3,7 @@
   "theme": {
     "bg1": "#0b0f1d",
     "bg2": "#1d0f2e",
-    "accent1": "#7cf3ff",
+    "accent1": "#7cffa0",
     "accent2": "#a98bff",
     "accent3": "#ff6fd1",
     "mode": "dark",
@@ -122,7 +122,7 @@
   "about": {
     "photo": null,
     "story": {
-      "th": "สวัสดีครับ ผมชื่อ Warayuth จบวิทยาการคอมพิวเตอร์ แล้วเริ่มทำงานเป็นนักพัฒนาซอฟต์แวร์ตั้งแต่ปี 2025 ผมสนุกกับการแปลงไอเดียให้กลายเป็นแอปและหน้าเว็บที่คนใช้ได้จริง ทั้งฝั่งหน้าบ้านและหลังบ้าน เวลาว่างผมชอบเล่นเกม ตีแบด และหัดทำโปรเจกต์เล็ก ๆ ไปเรื่อย ๆ เพื่อให้ฝีมือพัฒนาขึ้นทุกวัน",
+      "th": "สวัสดีครับ ผมชื่อ Warayuth จบวิทยาการคอมพิวเตอร์ แล้วเริ่มทำงานเป็นนักพัฒนาซอฟต์แวร์ตั้งแต่ปี 2025 ผมสนุกกับการแปลงไอเดียให้กลายเป็นแอปและหน้าเว็บที่คนใช้ได้จริง ทั้งฝั่งหน้าบ้านและหลังบ้าน เวลาว่างผมชอบเล่นเกม ตีแบด และหัดทำโปรเจกต์เล็ก ๆ ไปเรื่อย ๆ เพื่อให้ฝีมือพัฒนาขึ้นทุกวัน (ทดสอบระบบแก้ไข)",
       "en": "Hi, I am Warayuth. I studied computer science and started working as a software developer in 2025. I enjoy turning ideas into apps and web pages people can really use, on both the front end and the back end. Outside of work I play games, play badminton, and keep building small side projects so I get a little better every day."
     },
     "facts": [
