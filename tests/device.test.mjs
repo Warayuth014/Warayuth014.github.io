@@ -4,6 +4,16 @@ import { chooseHeroMode } from '../assets/js/hero/device.js';
 
 const desktop = { reducedMotion: false, webgl: true, width: 1366, deviceMemory: 8, firstFrameMs: 16 };
 
+test('forced: reduced motion, weak phone and slow first frame all stay live', () => {
+  assert.equal(chooseHeroMode({ ...desktop, reducedMotion: true, forced: true }), 'live');
+  assert.equal(chooseHeroMode({ ...desktop, width: 390, deviceMemory: 2, forced: true }), 'live');
+  assert.equal(chooseHeroMode({ ...desktop, firstFrameMs: 500, forced: true }), 'live');
+});
+
+test('forced still gives the poster without WebGL', () => {
+  assert.equal(chooseHeroMode({ ...desktop, webgl: false, forced: true }), 'poster');
+});
+
 test('desktop default is live', () => {
   assert.equal(chooseHeroMode(desktop), 'live');
 });

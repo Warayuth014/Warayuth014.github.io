@@ -11,8 +11,48 @@ const prefersReduced = () => Boolean(reduceQuery()?.matches);
 let webglCache = null;
 const webgl = () => (webglCache ??= hasWebGL());
 
+// The visitor's own choice to run the 3D scene even when the browser asks for reduced motion
+// or the device looks weak. Stored per browser; storage can be blocked, so every access is guarded.
+const FORCE_KEY = 'hero.force3d';
+function readForced() {
+  try { return localStorage.getItem(FORCE_KEY) === '1'; } catch { return false; }
+}
+function writeForced(on) {
+  try { if (on) localStorage.setItem(FORCE_KEY, '1'); else localStorage.removeItem(FORCE_KEY); } catch { /* blocked */ }
+}
+
 // ---------- hero ----------
-const hero = { stage: null, desk: null, token: 0, theme: null };
+const hero = { stage: null, desk: null, token: 0, theme: null, forced: readForced() };
+
+const TOGGLE_TEXT = {
+  on: { th: '▶ เปิดฉาก 3D', en: '▶ Turn on 3D' },
+  off: { th: '■ หยุดฉาก 3D', en: '■ Stop 3D' },
+};
+
+// The toggle sits in the hero section (not in the aria-hidden stage). It offers "turn on" while the
+// poster is shown for a reason the visitor can override, and "stop" while a forced scene runs.
+function syncToggle(stage, mode, canForce) {
+  const section = stage.parentElement;
+  if (!section) return;
+  let btn = section.querySelector(':scope > .hero-toggle');
+  const want = mode === 'poster' && canForce ? 'on' : hero.forced && mode !== 'poster' && mode !== 'off' ? 'off' : null;
+  if (!want) { btn?.remove(); return; }
+  if (!btn) {
+    btn = document.createElement('button');
+    btn.type = 'button';
+    btn.className = 'hero-toggle';
+    btn.addEventListener('click', () => {
+      hero.forced = btn.dataset.action === 'on';
+      writeForced(hero.forced);
+      syncHero(hero.stage, hero.theme);
+      hero.stage?.parentElement?.querySelector(':scope > .hero-toggle')?.focus();
+    });
+    section.append(btn);
+  }
+  const lang = document.documentElement.lang === 'th' ? 'th' : 'en';
+  btn.dataset.action = want;
+  btn.textContent = TOGGLE_TEXT[want][lang];
+}
 
 function clearLive() {
   hero.token++; // invalidates a pending dynamic import
@@ -63,6 +103,7 @@ async function startLive(stage) {
     clearLive();
     setMode(stage, 'poster');
     showPoster(stage);
+    syncToggle(stage, 'poster', true);
   };
   let desk;
   try {
@@ -73,7 +114,7 @@ async function startLive(stage) {
       onFirstFrame(ms) {
         stage.dataset.heroFirstFrame = String(Math.round(performance.now()));
         // chooseHeroMode owns the "too slow" rule; hand it the measured first frame.
-        const mode = chooseHeroMode({ reducedMotion: false, webgl: true, width: Infinity, deviceMemory: 8, firstFrameMs: ms });
+        const mode = chooseHeroMode({ reducedMotion: false, webgl: true, width: Infinity, deviceMemory: 8, firstFrameMs: ms, forced: hero.forced });
         if (mode === 'poster') queueMicrotask(toPoster);
       },
       onLost: toPoster,
@@ -85,6 +126,7 @@ async function startLive(stage) {
   if (token !== hero.token) { desk.dispose(); return; }
   hero.desk = desk;
   if (stage.dataset.heroMode === 'loading') setMode(stage, 'live');
+  syncToggle(stage, stage.dataset.heroMode, true);
 }
 
 export function syncHero(stage, theme) {
@@ -99,21 +141,26 @@ export function syncHero(stage, theme) {
     clearLive();
     hidePoster(stage);
     setMode(stage, 'off');
+    syncToggle(stage, 'off', false);
     return;
   }
+  const canForce = fx.hero3d !== false && webgl();
   const mode = fx.hero3d === false ? 'poster' : chooseHeroMode({
     reducedMotion: prefersReduced(),
     webgl: webgl(),
     width: window.innerWidth,
     deviceMemory: navigator.deviceMemory,
+    forced: hero.forced,
   });
   if (mode === 'poster') {
     clearLive();
     setMode(stage, 'poster');
     showPoster(stage);
+    syncToggle(stage, 'poster', canForce);
     return;
   }
   hidePoster(stage);
+  syncToggle(stage, stage.dataset.heroMode === 'live' ? 'live' : 'loading', canForce);
   if (hero.desk) { hero.desk.setTheme(theme); return; }
   if (stage.dataset.heroMode === 'loading') return; // import in flight; it reads hero.theme when it mounts
   startLive(stage);
