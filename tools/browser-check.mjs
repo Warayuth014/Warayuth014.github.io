@@ -107,10 +107,10 @@ if (timing) {
 }
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.evaluate(() => document.fonts?.ready);
-// the hero scene mounts after first paint: wait until it settles on live / poster / off
+// the hero scene mounts after first paint: wait until it settles on live / poster
 await page.waitForFunction(() => {
   const m = document.querySelector('.hero-stage')?.dataset.heroMode;
-  return !document.querySelector('.hero-stage') || m === 'live' || m === 'poster' || m === 'off';
+  return !document.querySelector('.hero-stage') || m === 'live' || m === 'poster';
 }, null, { timeout: 15000 }).catch(() => {});
 if (wait) await page.waitForTimeout(wait);
 

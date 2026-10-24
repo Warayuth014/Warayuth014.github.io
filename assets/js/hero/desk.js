@@ -9,14 +9,21 @@
 //                 preserveDrawingBuffer so toDataURL works)
 import * as THREE from 'three';
 import { isUiTarget, rotateAccents, nextTint, keysNear, fade, ease } from './interact.js';
+import { deriveLight } from '../theme.js';
 
 const DEFAULT_PALETTE = { bg1: '#0b0f1d', bg2: '#1d0f2e', accent1: '#7cf3ff', accent2: '#a98bff', accent3: '#ff6fd1' };
 const hex = (v, d) => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v : d);
 const clamp = (v, a, b) => Math.min(b, Math.max(a, v));
 
+// The scene's colours. theme.mode 'light' turns the night room into a daytime one: the palette is the same
+// light derivation the page uses (near-white bg, accents darkened for contrast), plus `day` and the ink colour.
 function readPalette(theme) {
   const th = theme && typeof theme === 'object' ? theme : {};
-  return Object.fromEntries(Object.entries(DEFAULT_PALETTE).map(([k, d]) => [k, hex(th[k], d)]));
+  const pal = Object.fromEntries(Object.entries(DEFAULT_PALETTE).map(([k, d]) => [k, hex(th[k], d)]));
+  const day = th.mode === 'light';
+  if (!day) return { ...pal, fg: '', day };
+  const l = deriveLight(pal.bg1, pal.bg2, [pal.accent1, pal.accent2, pal.accent3]);
+  return { bg1: l.l1, bg2: l.l2, accent1: l.accents[0], accent2: l.accents[1], accent3: l.accents[2], fg: l.fg, day };
 }
 
 // ---------- code shown on the monitors (generic on purpose) ----------
@@ -77,7 +84,7 @@ function createScreen(snippets, w, h) {
   texture.colorSpace = THREE.SRGBColorSpace;
   texture.anisotropy = 4;
   const font = '20px ui-monospace, Consolas, "Courier New", monospace';
-  let ink = { bg: '#0a0d18', kw: '#a98bff', str: '#ff6fd1', type: '#7cf3ff', num: '#ffd479', com: '#5d6688', fg: '#d8def5' };
+  let ink = { bg: '#0a0d18', kw: '#a98bff', str: '#ff6fd1', type: '#7cf3ff', num: '#ffd479', com: '#5d6688', fg: '#d8def5', bar: 'rgba(255,255,255,0.05)' };
   const st = { si: 0, ci: 0, hold: 0, dirty: true, acc: 0, blink: 0, typed: 0 };
 
   ctx.font = font;
@@ -89,7 +96,7 @@ function createScreen(snippets, w, h) {
   function draw() {
     ctx.fillStyle = ink.bg;
     ctx.fillRect(0, 0, w, h);
-    ctx.fillStyle = 'rgba(255,255,255,0.05)';
+    ctx.fillStyle = ink.bar;
     ctx.fillRect(0, 0, w, 32);
     ['#ff6b6b', '#ffd479', '#7cf3a0'].forEach((c, i) => {
       ctx.fillStyle = c;
@@ -207,8 +214,12 @@ export function mountDesk(el, opts = {}) {
   const camera = new THREE.PerspectiveCamera(32, 1, 0.1, 30);
 
   // ----- materials shared by several meshes -----
-  const deskMat = new THREE.MeshStandardMaterial({ color: 0x171c31, roughness: 0.5, metalness: 0.15 });
-  const plastic = new THREE.MeshStandardMaterial({ color: 0x0f1322, roughness: 0.45, metalness: 0.2 });
+  // night and day colours of the materials that change with the mode: [material, night hex, day hex]
+  const looks = [];
+  const look = (m, night, day) => { looks.push([m, night, day]); return m; };
+  const deskMat = look(new THREE.MeshStandardMaterial({ roughness: 0.5, metalness: 0.15 }), 0x171c31, 0xe8d6b8);
+  const plastic = look(new THREE.MeshStandardMaterial({ roughness: 0.45, metalness: 0.2 }), 0x0f1322, 0xeceef3);
+  const kbBaseMat = look(new THREE.MeshStandardMaterial({ roughness: 0.45, metalness: 0.2 }), 0x0f1322, 0xaeb4c2);
   const wallMat = new THREE.MeshStandardMaterial({ color: 0x111528, roughness: 1 });
   const neonA1 = new THREE.MeshBasicMaterial();
   const neonA2 = new THREE.MeshBasicMaterial();
@@ -249,7 +260,8 @@ export function mountDesk(el, opts = {}) {
     const neck = new THREE.Mesh(new THREE.BoxGeometry(0.07, 0.3, 0.04), plastic);
     neck.position.set(0, 0.16, -0.03);
     const cy = 0.2 + h / 2 + 0.03;
-    const frame = new THREE.Mesh(new THREE.BoxGeometry(w + 0.05, h + 0.05, 0.04), plastic);
+    const bezel = look(new THREE.MeshStandardMaterial({ roughness: 0.45, metalness: 0.2 }), 0x0f1322, 0x2e3340);
+    const frame = new THREE.Mesh(new THREE.BoxGeometry(w + 0.05, h + 0.05, 0.04), bezel);
     frame.position.set(0, cy, 0);
     const scr = createScreen(snippets, 640, Math.round(640 * (h / w)));
     const face = new THREE.Mesh(new THREE.PlaneGeometry(w, h), new THREE.MeshBasicMaterial({ map: scr.texture, toneMapped: false }));
@@ -257,7 +269,7 @@ export function mountDesk(el, opts = {}) {
     g.add(base, neck, frame, face);
     scene.add(g);
     screens.push(scr);
-    return { scr, face, group: g, cy, size: [w, h], center: new THREE.Vector3(x, 0.035 + cy, z) };
+    return { scr, face, bezel, group: g, cy, size: [w, h], center: new THREE.Vector3(x, 0.035 + cy, z) };
   }
   const main = monitor(-0.35, -0.12, 0, 1.3, 0.76, SNIPPETS_MAIN);
   const side = monitor(1.05, -0.05, -0.42, 0.9, 0.56, SNIPPETS_SIDE);
@@ -267,7 +279,7 @@ export function mountDesk(el, opts = {}) {
   kb.position.set(-0.35, 0.035, 0.46);
   kb.rotation.x = -0.04;
   scene.add(kb);
-  const kbBase = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.024, 0.33), plastic);
+  const kbBase = new THREE.Mesh(new THREE.BoxGeometry(0.92, 0.024, 0.33), kbBaseMat);
   kbBase.position.y = 0.012;
   kb.add(kbBase);
 
@@ -287,6 +299,7 @@ export function mountDesk(el, opts = {}) {
   const legends = new THREE.InstancedMesh(legendGeo, new THREE.MeshBasicMaterial(), KEYS);
   const m4 = new THREE.Matrix4();
   const white = new THREE.Color(1, 1, 1);
+  const legendInk = new THREE.Color(0x3b4153); // legend colour on the light keys
   function placeKey(i, lift, grow = 0) {
     const k = keyPos[i];
     m4.makeScale(k.sx, 1 + grow, 1 + grow * 0.5).setPosition(k.x, 0.032 + lift, k.z);
@@ -337,7 +350,7 @@ export function mountDesk(el, opts = {}) {
     pad.add(grip);
   });
   const stickGeo = new THREE.CylinderGeometry(0.014, 0.017, 0.02, 14);
-  const stickMat = new THREE.MeshStandardMaterial({ color: 0x05070f, roughness: 0.6 });
+  const stickMat = look(new THREE.MeshStandardMaterial({ roughness: 0.6 }), 0x05070f, 0x454b5c);
   [[-0.05, 0.015], [0.035, 0.035]].forEach(([x, z]) => {
     const s = new THREE.Mesh(stickGeo, stickMat);
     s.position.set(x, 0.062, z);
@@ -391,10 +404,10 @@ export function mountDesk(el, opts = {}) {
   const head = new THREE.Group();
   head.position.set(0, 0.42, 0);
   head.rotation.z = 1.0;
-  const shade = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.13, 20, 1, true), new THREE.MeshStandardMaterial({ color: 0x1a1f36, roughness: 0.4, metalness: 0.3, side: THREE.DoubleSide }));
+  const shade = new THREE.Mesh(new THREE.ConeGeometry(0.075, 0.13, 20, 1, true), look(new THREE.MeshStandardMaterial({ roughness: 0.4, metalness: 0.3, side: THREE.DoubleSide }), 0x1a1f36, 0xf4f1ea));
   shade.position.y = 0.03;
   shade.rotation.x = Math.PI; // opening faces away from the arm (down)
-  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 8), new THREE.MeshBasicMaterial({ color: 0xffe2b0 }));
+  const bulb = new THREE.Mesh(new THREE.SphereGeometry(0.03, 12, 8), look(new THREE.MeshBasicMaterial(), 0xffe2b0, 0xd9d4c8));
   bulb.position.y = -0.01;
   head.add(shade, bulb);
   arm2.add(head);
@@ -408,7 +421,10 @@ export function mountDesk(el, opts = {}) {
   lampGlow.material.color.set(0xffc27a);
 
   // ----- lights -----
-  scene.add(new THREE.HemisphereLight(0x8a96ff, 0x120a1e, 0.55));
+  const hemi = new THREE.HemisphereLight(0x8a96ff, 0x120a1e, 0.55);
+  const sun = new THREE.DirectionalLight(0xfff1dc, 0); // daylight from the window side (day only)
+  sun.position.set(-4, 3.4, 3);
+  scene.add(hemi, sun);
   const lightWall1 = new THREE.PointLight(0xffffff, 6, 7, 2);
   lightWall1.position.set(0, 1.45, -0.55);
   const lightWall3 = new THREE.PointLight(0xffffff, 4, 6, 2);
@@ -421,7 +437,9 @@ export function mountDesk(el, opts = {}) {
   scene.add(lightWall1, lightWall3, lightKb, lamp, lamp.target);
 
   // ----- theme -----
+  let day = pal.day;
   function applyPalette() {
+    day = pal.day;
     C.bg1.set(pal.bg1);
     C.bg2.set(pal.bg2);
     C.a1.set(pal.accent1);
@@ -441,12 +459,13 @@ export function mountDesk(el, opts = {}) {
   function applyNeon(retint = true) {
     if (retint) rot = rotateAccents(accents, tint);
     const [s1, s2, s3] = rot;
-    const boost = 1 + pulse * 1.4;
+    const boost = (day ? 0.85 : 1) + pulse * 1.4;
     neonA1.color.copy(s1).multiplyScalar(boost);
     neonA2.color.copy(s2).multiplyScalar(boost);
     neonA3.color.copy(s3).multiplyScalar(boost);
-    lightWall1.intensity = 6 * (1 + pulse * 0.9);
-    lightWall3.intensity = 4 * (1 + pulse * 0.9);
+    const wash = day ? 0.05 : 1; // by day the strips only tint the wall a little
+    lightWall1.intensity = 6 * wash * (1 + pulse * 0.9);
+    lightWall3.intensity = 4 * wash * (1 + pulse * 0.9);
     if (!retint) return;
     lightWall1.color.copy(s1);
     lightWall3.color.copy(s3);
@@ -456,14 +475,24 @@ export function mountDesk(el, opts = {}) {
     if (hex !== neonHex) { neonHex = hex; el.dataset.heroNeon = hex; }
   }
   onPalette(() => {
-    scene.background.copy(C.bg1).multiplyScalar(0.8);
-    wallMat.color.copy(C.bg2).lerp(C.bg1, 0.35).multiplyScalar(1.5);
+    looks.forEach(([m, night, light]) => m.color.set(day ? light : night));
+    scene.background.copy(C.bg1).multiplyScalar(day ? 0.97 : 0.8);
+    wallMat.color.copy(C.bg2).lerp(C.bg1, 0.35).multiplyScalar(day ? 1.05 : 1.5);
+    hemi.color.set(day ? 0xfff6ea : 0x8a96ff);
+    hemi.groundColor.set(day ? 0xe6dfd4 : 0x120a1e);
+    hemi.intensity = day ? 1.35 : 0.55;
+    sun.intensity = day ? 2.2 : 0;
+    lamp.intensity = day ? 0 : 9; // the lamp is off by day
+    lightKb.intensity = day ? 0.25 : 1.6;
+    glows.forEach((g) => { g.visible = !day; });
     applyNeon();
     lightKb.color.copy(C.a2);
     glowK.material.color.copy(C.a2);
     const css = (c) => `#${c.getHexString()}`; // linear -> sRGB hex for the 2D canvas
     const ink = { kw: css(C.a2), str: css(C.a3), type: css(C.a1) };
-    screens.forEach((s) => s.setInk({ ...ink, bg: css(C.bg1.clone().multiplyScalar(0.55)) }));
+    screens.forEach((s) => s.setInk(day
+      ? { ...ink, bg: '#fbfcfe', bar: 'rgba(0,0,0,0.06)', fg: pal.fg, com: '#8a93a8', num: '#a4580a' }
+      : { ...ink, bg: css(C.bg1.clone().multiplyScalar(0.55)), bar: 'rgba(255,255,255,0.05)', fg: '#d8def5', com: '#5d6688', num: '#ffd479' }));
   });
   const tmp = new THREE.Color();
 
@@ -491,7 +520,7 @@ export function mountDesk(el, opts = {}) {
   const camNear = new THREE.Vector3(main.center.x, main.center.y - 0.02, 1.9);
   const lookNear = main.center.clone();
   const camPos = new THREE.Vector3();
-  const look = new THREE.Vector3();
+  const lookAt = new THREE.Vector3();
 
   const onPointer = (e) => {
     pointer.x = (e.clientX / window.innerWidth) * 2 - 1;
@@ -574,7 +603,14 @@ export function mountDesk(el, opts = {}) {
     }
     hov.monitor = ease(hov.monitor, hovered === 'monitor' ? 1 : 0, dt, 9);
     hov.pad = ease(hov.pad, hovered === 'pad' ? 1 : 0, dt, 9);
-    main.face.material.color.setScalar(1 + hov.monitor * 0.5);
+    if (day) { // a white screen cannot brighten, so by day hover tints the screen and lights the bezel
+      main.face.material.color.set(0xffffff).lerp(C.a1, hov.monitor * 0.2);
+      main.bezel.emissive.copy(C.a1);
+      main.bezel.emissiveIntensity = hov.monitor * 0.8;
+    } else {
+      main.face.material.color.setScalar(1 + hov.monitor * 0.5);
+      main.bezel.emissiveIntensity = 0;
+    }
     glowA.material.opacity = 0.28 + hov.monitor * 0.22;
     rumble = fade(rumble, dt, 0.5);
     pad.position.y = padY + hov.pad * 0.012;
@@ -590,12 +626,12 @@ export function mountDesk(el, opts = {}) {
     pointer.sy += (pointer.y - pointer.sy) * k;
     const e = smoothP * smoothP * (3 - 2 * smoothP);
     camPos.lerpVectors(camBase, camNear, e);
-    look.lerpVectors(lookBase, lookNear, e);
+    lookAt.lerpVectors(lookBase, lookNear, e);
     const amt = 1 - e;
     camPos.x += pointer.sx * 0.28 * amt;
     camPos.y += -pointer.sy * 0.12 * amt;
     camera.position.copy(camPos);
-    camera.lookAt(look);
+    camera.lookAt(lookAt);
 
     el.style.opacity = String(1 - smoothP);
 
@@ -612,14 +648,18 @@ export function mountDesk(el, opts = {}) {
       const wave = 0.5 + 0.5 * Math.sin(kp.x * 4.2 + kp.z * 3 - clock * 1.1);
       tmp.copy(C.a1).lerp(C.a2, wave).lerp(C.a3, Math.max(0, Math.sin(clock * 0.4 + kp.x * 2)) * 0.5);
       const h = keyHover[i];
-      tmp.lerp(C.a1, h * 0.7).lerp(white, h * 0.35); // towards the lead accent, a touch of white at the peak
-      tmp.multiplyScalar(0.28 + 0.4 * wave + flash[i] * 0.9 + h * 2.8);
-      legends.setColorAt(i, tmp);
+      if (day) { // dark legends on light caps; typed keys flush with the accent, a hovered cap turns accent with a white legend
+        legends.setColorAt(i, tmp.lerp(legendInk, 1 - clamp(0.12 * wave + flash[i], 0, 1)).lerp(white, h * 0.9));
+      } else {
+        tmp.lerp(C.a1, h * 0.7).lerp(white, h * 0.35); // towards the lead accent, a touch of white at the peak
+        tmp.multiplyScalar(0.28 + 0.4 * wave + flash[i] * 0.9 + h * 2.8);
+        legends.setColorAt(i, tmp);
+      }
       flash[i] = Math.max(0, flash[i] - dt * 3.5);
       keyHover[i] = fade(h, dt, 0.4);
       if (h > 0 || lifted[i]) { // a lit key rises, swells and takes the accent on its cap, then settles as it fades
         placeKey(i, h * 0.012, h * 0.12);
-        caps.setColorAt(i, h > 0 ? capTint.copy(C.a1).multiplyScalar(1 + h * 7) : white);
+        caps.setColorAt(i, h > 0 ? (day ? capTint.copy(white).lerp(C.a1, Math.min(1, h * 0.75)) : capTint.copy(C.a1).multiplyScalar(1 + h * 7)) : white);
         lifted[i] = h > 0 ? 1 : 0;
         liftDirty = true;
       }
@@ -749,7 +789,7 @@ export function mountDesk(el, opts = {}) {
       if (Object.keys(next).some((k) => next[k] !== pal[k])) { tint = 0; pulse = 0; } // a new theme starts from its own accent order
       Object.assign(pal, next);
       applyPalette();
-      if (!animate) renderOnce();
+      if (!animate) { screens.forEach((s) => s.draw()); renderOnce(); }
     },
   };
 }

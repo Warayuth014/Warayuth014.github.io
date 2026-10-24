@@ -1,6 +1,7 @@
 #!/usr/bin/env node
-// Renders the live night-desk hero at 1600x900 in an installed Edge/Chrome and saves the canvas as
-// assets/img/hero-poster.webp (canvas.toDataURL). Usage: node tools/capture-poster.mjs [baseUrl]
+// Renders the live desk hero at 1600x900 in an installed Edge/Chrome and saves the canvas as
+// assets/img/hero-poster.webp (canvas.toDataURL), or with --light the day room as hero-poster-light.webp.
+// Usage: node tools/capture-poster.mjs [--light] [baseUrl]
 // Needs the dev server (node tools/serve.mjs 4173).
 // ?capture=1 makes the scene deterministic (fixed camera, code pre-typed, preserveDrawingBuffer).
 import { chromium } from 'playwright-core';
@@ -9,8 +10,9 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
-const out = resolve(root, 'assets/img/hero-poster.webp');
-const base = process.argv[2] ?? 'http://localhost:4173/';
+const light = process.argv.includes('--light');
+const out = resolve(root, light ? 'assets/img/hero-poster-light.webp' : 'assets/img/hero-poster.webp');
+const base = process.argv.slice(2).find((a) => /^https?:/.test(a)) ?? 'http://localhost:4173/';
 const MAX_KB = 200;
 
 async function launch() {
@@ -23,6 +25,12 @@ async function launch() {
 const browser = await launch();
 try {
   const page = await (await browser.newContext({ viewport: { width: 1600, height: 900 }, deviceScaleFactor: 1 })).newPage();
+  if (light) { // serve the same content with the theme in light mode, so the scene is the day room
+    await page.route('**/content/site.json', async (route) => {
+      const site = await (await route.fetch()).json();
+      await route.fulfill({ json: { ...site, theme: { ...site.theme, mode: 'light' } } });
+    });
+  }
   const u = new URL(base);
   u.searchParams.set('capture', '1');
   await page.goto(u.href, { waitUntil: 'networkidle' });
