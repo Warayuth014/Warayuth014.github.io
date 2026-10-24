@@ -1,15 +1,11 @@
 // Decides whether the hero runs the live three.js scene or shows the still poster.
-// Pure and browser-free at import time so node can test it.
+// Pure and browser-free at import time so node can test it. Only technical limits fall back to the
+// poster: no WebGL, or a first frame that is too slow. Screen size and motion settings never do.
 
 export const SLOW_FRAME_MS = 120;
 
-// `forced`: the visitor pressed "turn on 3D", so only missing WebGL keeps the poster.
-export function chooseHeroMode({ reducedMotion, webgl, width, deviceMemory, firstFrameMs, forced } = {}) {
+export function chooseHeroMode({ webgl, firstFrameMs } = {}) {
   if (!webgl) return 'poster';
-  if (forced) return 'live';
-  if (reducedMotion) return 'poster';
-  // Weak phone: narrow screen and (little or unknown) memory.
-  if (width <= 480 && !(deviceMemory > 4)) return 'poster';
   if (firstFrameMs > SLOW_FRAME_MS) return 'poster';
   return 'live';
 }

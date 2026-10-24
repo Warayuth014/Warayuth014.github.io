@@ -5,7 +5,8 @@
 //            neon colour steps and cycles back after three clicks; keyboard hover/click; empty canvas does nothing;
 //            CTA buttons still work; frame time with the pointer moving; dispose/re-boot never stacks listeners
 //   touch:   tap on the controller works, a vertical swipe still scrolls the page
-//   reduced motion: poster only, none of the above is active
+//   reduced-motion emulation: hero still live, desk state and threads present (nothing switches off)
+//   weak phone (390 px, deviceMemory 2): hero goes live
 //   console: no errors or warnings in any of the runs
 // --shots writes docs/superpowers/shots/hero-*.jpg. Exit code 1 on any failure.
 import { chromium } from 'playwright-core';
@@ -46,8 +47,9 @@ async function launch() {
 
 const browser = await launch();
 const logs = [];
-async function open(opts = {}) {
+async function open(opts = {}, init = null) {
   const ctx = await browser.newContext(opts);
+  if (init) await ctx.addInitScript(init);
   await ctx.addInitScript(() => { try { localStorage.setItem('lang', 'en'); } catch { /* ignore */ } });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(`${m.type()}: ${m.text()}`); });
@@ -269,16 +271,22 @@ async function heroListeners(page) {
 // ---------- reduced motion ----------
 {
   const { ctx, page } = await open({ viewport: { width: 1366, height: 800 }, reducedMotion: 'reduce' });
-  check(await stageData(page, 'heroMode') === 'poster', 'reduced motion: poster mode');
-  check(await page.locator('.hero-canvas').count() === 0, 'reduced motion: no canvas');
-  check(await stageData(page, 'heroNeon') === '' && await stageData(page, 'heroHover') === '', 'reduced motion: no desk state');
-  check(await heroListeners(page) === 0, 'reduced motion: no listeners on the hero section');
-  for (const [x, y] of [[900, 400], [1000, 450], [800, 500]]) {
-    await page.mouse.move(x, y);
-    await page.mouse.click(x, y);
-  }
-  await sleep(300);
-  check(await cursor(page) === '' && (await page.evaluate(() => scrollY)) === 0, 'reduced motion: moving and clicking over the poster does nothing');
+  check(await stageData(page, 'heroMode') === 'live', 'reduced motion emulation: hero is still live');
+  check(await page.locator('.hero-canvas').count() === 1, 'reduced motion emulation: canvas present');
+  check(/^#[0-9a-f]{6}$/.test(await stageData(page, 'heroNeon')), 'reduced motion emulation: desk state published');
+  check(await heroListeners(page) > 0, 'reduced motion emulation: desk listens on the hero section');
+  check(await page.locator('canvas.threads').count() === 1, 'reduced motion emulation: ambient threads still run');
+  await ctx.close();
+}
+
+// ---------- weak phone: 390 px, deviceMemory 2 ----------
+{
+  const { ctx, page } = await open({
+    viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true,
+  }, () => Object.defineProperty(navigator, 'deviceMemory', { get: () => 2 }));
+  check(await page.evaluate(() => navigator.deviceMemory) === 2, 'weak phone: deviceMemory is 2');
+  check(await stageData(page, 'heroMode') === 'live', 'weak phone: hero goes live');
+  check(await page.locator('.hero-canvas').count() === 1, 'weak phone: canvas present');
   await ctx.close();
 }
 

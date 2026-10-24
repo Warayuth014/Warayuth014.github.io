@@ -1,7 +1,7 @@
 // "Night desk" hero: two monitors typing generic code, a glowing keyboard, a controller, neon strips.
 // Built only from three.js primitives and CanvasTextures (no model files).
 //
-// mountDesk(el, { theme, reducedMotion, capture, onFirstFrame, onLost }) -> { dispose, setTheme, canvas }
+// mountDesk(el, { theme, capture, onFirstFrame, onLost }) -> { dispose, setTheme, canvas }
 //   el            the .hero-stage element (the canvas is appended here)
 //   onFirstFrame  called with the milliseconds the first rendered frame took (shaders pre-compiled)
 //   onLost        called once if the WebGL context is lost (scene is already disposed by then)
@@ -188,8 +188,8 @@ function glowTexture() {
 }
 
 export function mountDesk(el, opts = {}) {
-  const { reducedMotion = false, capture = false, onFirstFrame, onLost } = opts;
-  const animate = !reducedMotion && !capture;
+  const { capture = false, onFirstFrame, onLost } = opts;
+  const animate = !capture;
   const pal = readPalette(opts.theme);
   const C = { bg1: new THREE.Color(), bg2: new THREE.Color(), a1: new THREE.Color(), a2: new THREE.Color(), a3: new THREE.Color() };
   const binders = [];
@@ -550,7 +550,7 @@ export function mountDesk(el, opts = {}) {
     const hit = castAt(e.clientX, e.clientY);
     if (!hit) return;
     if (hit.kind === 'monitor') {
-      document.getElementById('projects')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+      document.getElementById('projects')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     } else if (hit.kind === 'pad') {
       tint = nextTint(tint);
       pulse = 1;

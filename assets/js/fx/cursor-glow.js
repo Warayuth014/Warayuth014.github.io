@@ -1,10 +1,10 @@
-// Soft glow that trails the mouse. Does nothing under reduced motion or on coarse pointers.
-import { prefersReducedMotion, coarsePointer, noop } from './env.js';
+// Soft glow that trails the mouse. Does nothing on coarse pointers (no hover).
+import { coarsePointer, noop } from './env.js';
 
 let last = null; // survives dispose/enable so a re-render does not snap the glow away
 
 export function enableCursorGlow() {
-  if (prefersReducedMotion() || coarsePointer()) return noop;
+  if (coarsePointer()) return noop;
   const el = document.createElement('div');
   el.className = 'cursor-glow';
   el.setAttribute('aria-hidden', 'true');

@@ -1,12 +1,12 @@
 // Scroll reveal. Content is fully visible at rest: only elements that start below the fold are
 // marked (.rv) and they fade/slide in via opacity + translate (no layout change) when they enter.
-// Without IntersectionObserver, or under reduced motion, nothing is marked.
-import { prefersReducedMotion, noop } from './env.js';
+// Without IntersectionObserver nothing is marked.
+import { noop } from './env.js';
 
 const SELECTOR = '.card, .skill-row, .step, .fact, .about-story, .contact-mail, .social, .articles-list > *';
 
 export function enableReveal(root = document) {
-  if (prefersReducedMotion() || typeof IntersectionObserver === 'undefined') return noop;
+  if (typeof IntersectionObserver === 'undefined') return noop;
   const fold = window.innerHeight || document.documentElement.clientHeight;
   const targets = [...root.querySelectorAll(SELECTOR)].filter((el) => el.getBoundingClientRect().top > fold);
   if (!targets.length) return noop;

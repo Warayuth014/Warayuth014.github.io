@@ -4,7 +4,7 @@
 //   keyboard: Tab from the top through the nav to the first project card, Enter opens the dialog, focus is inside,
 //             Tab stays inside, Esc closes, focus returns to the card, hash is removed
 //   deep link: #project-<id> opens on load and on reload; unknown id does nothing; TH/EN toggle refills the open dialog
-//   reduced motion: no transforms on tilt/reveal elements, no glow element, nothing hidden
+//   reduced-motion emulation: tilt, reveal, glow and timeline progress still work (effects never switch off)
 //   normal motion: reveal marks only below-the-fold elements, no layout shift, tilt + glow work, re-render does not stack
 //   mobile: no glow, no tilt, no hover-only visibility rules, no horizontal overflow
 //   404: themed, bilingual
@@ -229,7 +229,7 @@ try {
     await ctx.close();
   }
 
-  // ---------- reduced motion ----------
+  // ---------- reduced motion emulation: effects are shown anyway ----------
   {
     const { ctx, page } = await newPage({ viewport: { width: 1366, height: 800 }, reducedMotion: 'reduce' });
     await ready(page, `${base}/`);
@@ -237,27 +237,16 @@ try {
     const box = await page.locator('.card').first().boundingBox();
     await page.mouse.move(box.x + box.width * 0.8, box.y + box.height * 0.3, { steps: 4 });
     await page.waitForTimeout(200);
-    const r = await page.evaluate(() => {
-      const els = [...document.querySelectorAll('.card, .skill-row, .step, .fact, .about-story, .contact-mail, .social')];
-      return {
-        n: els.length,
-        transformed: els.filter((e) => getComputedStyle(e).transform !== 'none' || getComputedStyle(e).translate !== 'none').length,
-        faded: els.filter((e) => getComputedStyle(e).opacity !== '1').length,
-        rv: document.querySelectorAll('.rv').length,
-        glow: document.querySelectorAll('.cursor-glow').length,
-        p: getComputedStyle(document.querySelector('.timeline')).getPropertyValue('--p').trim(),
-      };
-    });
-    check(r.n > 0 && r.transformed === 0 && r.faded === 0, `reduced motion: no transforms or fades on ${r.n} tilt/reveal elements`);
-    check(r.rv === 0 && r.glow === 0, 'reduced motion: no reveal marks and no glow element');
-    check(r.p === '', 'reduced motion: timeline line is static');
-    // runtime switch: enabling then disabling reduced motion
-    await page.emulateMedia({ reducedMotion: 'no-preference' });
-    await page.waitForTimeout(300);
-    check(await page.evaluate(() => document.querySelectorAll('.cursor-glow').length === 1), 'runtime: leaving reduced motion enables effects');
-    await page.emulateMedia({ reducedMotion: 'reduce' });
-    await page.waitForTimeout(300);
-    check(await page.evaluate(() => document.querySelectorAll('.cursor-glow, .rv').length === 0), 'runtime: entering reduced motion disposes effects');
+    const tilt = await page.evaluate(() => document.querySelector('.card').style.transform);
+    check(/rotate/.test(tilt), 'reduced motion emulation: tilt still applied');
+    const r = await page.evaluate(() => ({
+      rv: document.querySelectorAll('.rv').length,
+      glow: document.querySelectorAll('.cursor-glow').length,
+    }));
+    check(r.rv > 0 && r.glow === 1, `reduced motion emulation: reveal marks (${r.rv}) and glow element still present`);
+    await page.evaluate(() => document.querySelector('#journey').scrollIntoView());
+    await page.waitForTimeout(500);
+    check(await page.evaluate(() => getComputedStyle(document.querySelector('.timeline')).getPropertyValue('--p').trim() !== ''), 'reduced motion emulation: timeline progress still driven by scroll');
     await ctx.close();
   }
 
