@@ -7,6 +7,8 @@
 //   touch:   tap on the controller works, a vertical swipe still scrolls the page
 //   reduced-motion emulation: hero still live, desk state and threads present (nothing switches off)
 //   weak phone (390 px, deviceMemory 2): hero goes live
+//   light mode (theme.mode 'light' served for /content/site.json): live day room, hover/click on monitor, controller and
+//            keyboard, frame time; switching dark <-> light through a preview re-boot keeps a single canvas
 //   console: no errors or warnings in any of the runs
 // --shots writes docs/superpowers/shots/hero-*.jpg. Exit code 1 on any failure.
 import { chromium } from 'playwright-core';
@@ -47,15 +49,22 @@ async function launch() {
 
 const browser = await launch();
 const logs = [];
-async function open(opts = {}, init = null) {
+// light: serve /content/site.json with theme.mode 'light', so the page boots straight into the day room
+async function open(opts = {}, init = null, light = false) {
   const ctx = await browser.newContext(opts);
   if (init) await ctx.addInitScript(init);
+  if (light) {
+    await ctx.route('**/content/site.json', async (route) => {
+      const site = await (await route.fetch()).json();
+      await route.fulfill({ json: { ...site, theme: { ...site.theme, mode: 'light' } } });
+    });
+  }
   await ctx.addInitScript(() => { try { localStorage.setItem('lang', 'en'); } catch { /* ignore */ } });
   const page = await ctx.newPage();
   page.on('console', (m) => { if (m.type() === 'error' || m.type() === 'warning') logs.push(`${m.type()}: ${m.text()}`); });
   page.on('pageerror', (e) => logs.push(`pageerror: ${e.message}`));
   await page.goto(base + '/', { waitUntil: 'load' });
-  await page.waitForFunction(() => ['live', 'poster', 'off'].includes(document.querySelector('.hero-stage')?.dataset.heroMode), null, { timeout: 20000 });
+  await page.waitForFunction(() => ['live', 'poster'].includes(document.querySelector('.hero-stage')?.dataset.heroMode), null, { timeout: 20000 });
   return { ctx, page };
 }
 
@@ -231,13 +240,90 @@ async function heroListeners(page) {
   for (let i = 0; i < 3; i++) await reboot({});
   await sleep(300);
   check(await heroListeners(page) === n0, 'listeners: three preview re-boots do not stack');
-  await reboot({ mode: 'light' });
-  await sleep(300);
-  check(await heroListeners(page) === 0 && await stageData(page, 'heroMode') === 'off', 'listeners: light theme disposes the scene and removes every listener');
-  await reboot({ mode: 'dark' });
-  await page.waitForFunction(() => document.querySelector('.hero-stage')?.dataset.heroMode === 'live', null, { timeout: 10000 });
-  check(await heroListeners(page) === n0, 'listeners: back to dark mounts a fresh scene with the same 3 listeners');
-  check(await cursor(page) === '', 'listeners: body cursor is clean after dispose');
+  const canvases = () => page.locator('.hero-stage canvas').count();
+  for (const mode of ['light', 'dark', 'light', 'dark']) {
+    await reboot({ mode });
+    await sleep(300);
+    check(await stageData(page, 'heroMode') === 'live' && await canvases() === 1 && await heroListeners(page) === n0, `switch: ${mode} keeps one live canvas and the same 3 listeners`);
+  }
+  check(await cursor(page) === '', 'listeners: body cursor is clean after the switches');
+  await ctx.close();
+}
+
+// ---------- light mode: the day room ----------
+{
+  const { ctx, page } = await open({ viewport: { width: 1366, height: 800 } }, null, true);
+  check(await page.evaluate(() => document.documentElement.dataset.mode) === 'light', 'light: page is in light mode');
+  check(await stageData(page, 'heroMode') === 'live', 'light: hero is live (no plain gradient)');
+  check(await page.locator('.hero-stage canvas').count() === 1, 'light: canvas present');
+  check(await page.locator('.hero-poster').count() === 0, 'light: no poster over the live scene');
+  check(/^#[0-9a-f]{6}$/.test(await stageData(page, 'heroNeon')), 'light: neon strip colour is published');
+  await sleep(1200);
+  const spots = await locate(page, 1366, 800);
+  console.log(`      located: ${JSON.stringify(spots)}`);
+  check(Boolean(spots.monitor && spots.pad && spots.keyboard), 'light: monitor, controller and keyboard are all hit');
+  await page.mouse.move(...spots.monitor);
+  await sleep(250);
+  check(await cursor(page) === 'pointer' && await stageData(page, 'heroHover') === 'monitor', 'light: monitor hover -> body cursor pointer');
+  if (shots) {
+    const file = resolve(root, 'docs/superpowers/shots/hero-day-desktop.jpg');
+    await page.mouse.move(1330, 100);
+    await sleep(900);
+    writeFileSync(file, await page.screenshot({ type: 'jpeg', quality: 70 }));
+    console.log(`      shot: ${file} (${Math.round(statSync(file).size / 1024)} KB)`);
+  }
+  await page.mouse.move(...spots.pad);
+  await sleep(250);
+  const colours = [await stageData(page, 'heroNeon')];
+  for (let i = 0; i < 3; i++) {
+    await page.mouse.click(...spots.pad);
+    await sleep(200);
+    colours.push(await stageData(page, 'heroNeon'));
+  }
+  check(colours[1] !== colours[0] && colours[2] !== colours[1] && colours[3] === colours[0], `light: controller click steps the strip colour and cycles back (${colours.join(' -> ')})`);
+  await page.mouse.move(...spots.keyboard);
+  await sleep(250);
+  check(await stageData(page, 'heroHover') === 'keyboard', 'light: keyboard hover is detected');
+  await page.mouse.click(...spots.monitor);
+  const target = await page.evaluate(() => document.getElementById('projects').getBoundingClientRect().top + scrollY);
+  check(await page.waitForFunction((t) => Math.abs(scrollY - (t - 72)) < 120, target, { timeout: 5000 }).then(() => true, () => false), 'light: monitor click scrolls to #projects');
+  await ctx.close();
+
+  if (shots) {
+    const m = await open({ viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }, null, true);
+    await sleep(1500);
+    const file = resolve(root, 'docs/superpowers/shots/hero-day-mobile.jpg');
+    writeFileSync(file, await m.page.screenshot({ type: 'jpeg', quality: 55 }));
+    console.log(`      shot: ${file} (${Math.round(statSync(file).size / 1024)} KB)`);
+    await m.ctx.close();
+  }
+}
+
+// ---------- frame time in light mode with the pointer moving ----------
+{
+  const { ctx, page } = await open({ viewport: { width: 1366, height: 800 } }, null, true);
+  await sleep(800);
+  let measuring = true;
+  const sweep = (async () => {
+    for (let t = 0; measuring; t += 0.12) {
+      await page.mouse.move(683 + Math.cos(t) * 560, 400 + Math.sin(t * 1.3) * 300);
+      await sleep(16);
+    }
+  })();
+  const ms = await page.evaluate(() => new Promise((done) => {
+    let n = 0;
+    let first = 0;
+    const loop = (now) => {
+      if (!first) first = now;
+      n++;
+      if (now - first >= 3000) done((now - first) / (n - 1));
+      else requestAnimationFrame(loop);
+    };
+    requestAnimationFrame(loop);
+  }));
+  measuring = false;
+  await sweep;
+  check(ms <= 20, `perf (light): average frame ${ms.toFixed(1)} ms over 3 s with the pointer moving (limit 20)`);
   await ctx.close();
 }
 

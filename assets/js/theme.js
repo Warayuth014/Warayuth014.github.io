@@ -47,6 +47,13 @@ const darkenUntil = (hex, bg, min) => {
   for (let i = 0; i < 24 && contrast(c, bg) < min; i++) c = mix(c, '#000000', 0.07);
   return c;
 };
+// The light-mode colours derived from the theme's dark tokens (also read by the 3D hero's day scene).
+export function deriveLight(bg1, bg2, acc) {
+  const l1 = mix(bg1, '#ffffff', 0.95);
+  const l2 = mix(bg2, '#ffffff', 0.9);
+  const fg = lum(bg1) < 0.25 ? mix(bg1, '#000000', 0.35) : '#10131f';
+  return { l1, l2, fg, accents: acc.map((a) => darkenUntil(a, l1, 4.5)) };
+}
 const isHex = (v) => typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v);
 const pick = (v, d) => (isHex(v) ? v : d);
 
@@ -87,12 +94,10 @@ export function applyTheme(theme, { persist = true } = {}) {
   root.dataset.mode = light ? 'light' : 'dark';
 
   if (light) {
-    const l1 = mix(bg1, '#ffffff', 0.95);
-    const l2 = mix(bg2, '#ffffff', 0.9);
-    const fg = lum(bg1) < 0.25 ? mix(bg1, '#000000', 0.35) : '#10131f';
+    const { l1, l2, fg, accents } = deriveLight(bg1, bg2, acc);
     set('--bg1', l1);
     set('--bg2', l2);
-    acc.forEach((a, i) => set(`--accent${i + 1}`, darkenUntil(a, l1, 4.5)));
+    accents.forEach((a, i) => set(`--accent${i + 1}`, a));
     set('--fg', fg);
     set('--muted', mix(fg, l1, 0.38));
     set('--card', LIGHT_CARD);

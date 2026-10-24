@@ -5,6 +5,7 @@ import { chooseHeroMode, hasWebGL } from './device.js';
 import { mountThreads } from './threads.js';
 
 const POSTER = '/assets/img/hero-poster.webp';
+const POSTER_LIGHT = '/assets/img/hero-poster-light.webp';
 let webglCache = null;
 const webgl = () => (webglCache ??= hasWebGL());
 
@@ -17,11 +18,17 @@ function clearLive() {
   hero.desk = null;
 }
 
+// The still that stands in for the scene: the night room, or the day room in light mode.
 function showPoster(stage) {
-  if (stage.querySelector(':scope > .hero-poster')) return;
+  const src = hero.theme?.mode === 'light' ? POSTER_LIGHT : POSTER;
+  const have = stage.querySelector(':scope > .hero-poster');
+  if (have) {
+    if (have.getAttribute('src') !== src) have.src = src;
+    return;
+  }
   const img = document.createElement('img');
   img.className = 'hero-poster';
-  img.src = POSTER;
+  img.src = src;
   img.alt = '';
   img.decoding = 'async';
   stage.prepend(img);
@@ -90,13 +97,6 @@ export function syncHero(stage, theme) {
   hero.theme = theme;
   const fx = theme?.effects ?? {};
 
-  // Light mode keeps the plain gradient: the night scene would sit behind dark text.
-  if (theme?.mode === 'light') {
-    clearLive();
-    hidePoster(stage);
-    setMode(stage, 'off');
-    return;
-  }
   const mode = fx.hero3d === false ? 'poster' : chooseHeroMode({ webgl: webgl() });
   if (mode === 'poster') {
     clearLive();

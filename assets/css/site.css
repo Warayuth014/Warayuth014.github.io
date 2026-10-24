@@ -139,6 +139,23 @@ main { display: block; }
     radial-gradient(34rem 26rem at 78% 30%, color-mix(in srgb, var(--accent3) 28%, transparent), transparent 65%),
     radial-gradient(30rem 24rem at 60% 70%, color-mix(in srgb, var(--accent1) 20%, transparent), transparent 65%);
 }
+/* Day room: a light veil keeps the dark text readable over the left of the scene, and the accent hazes (which
+   would muddy a bright room) shrink to a hint. */
+:root[data-mode="light"] .hero-stage::after {
+  background:
+    linear-gradient(90deg, color-mix(in srgb, var(--bg1) 94%, transparent) 0%, color-mix(in srgb, var(--bg1) 82%, transparent) 40%, transparent 72%),
+    linear-gradient(0deg, color-mix(in srgb, var(--bg1) 85%, transparent), transparent 42%),
+    radial-gradient(34rem 26rem at 78% 30%, color-mix(in srgb, var(--accent3) 7%, transparent), transparent 65%);
+}
+@media (max-width: 719px) {
+  /* narrow screens stack the text under the scene, so the veil moves to the bottom and the room stays visible above it */
+  :root[data-mode="light"] .hero-stage.is-live .hero-canvas, :root[data-mode="light"] .hero-poster { opacity: 0.95; }
+  :root[data-mode="light"] .hero-stage::after {
+    background: linear-gradient(0deg, color-mix(in srgb, var(--bg1) 94%, transparent) 0%, color-mix(in srgb, var(--bg1) 86%, transparent) 42%, transparent 68%);
+  }
+}
+/* the intro runs over the scene, not the plain page: a darker grey than --muted keeps it above 4.5:1 on any pixel behind it */
+:root[data-mode="light"] .hero-intro { color: color-mix(in srgb, var(--fg) 82%, var(--muted)); }
 .hero-grid { width: 100%; max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 2rem; }
 .hero-copy { max-width: 46rem; }
 /* Live desk: its monitor, keyboard and controller sit under the big title, so the text blocks let pointer

@@ -140,13 +140,12 @@ function runPreload({ reduced = false, width = 1366, mode = null, search = '' })
   return { links, fetched: Boolean(ctx.__siteFetch) };
 }
 
-test('head script preloads the scene whenever the page is not in light mode (reduced motion and width are ignored)', () => {
+test('head script preloads the scene in every mode, light included (reduced motion and width are ignored)', () => {
   for (const reduced of [false, true]) {
     for (const width of [390, 480, 481, 1366]) {
       for (const mode of [null, 'dark', 'light']) {
         const { links } = runPreload({ reduced, width, mode });
-        const want = mode !== 'light';
-        assert.equal(links.length > 0, want, `reduced=${reduced} width=${width} mode=${mode}`);
+        assert.equal(links.length, 3, `reduced=${reduced} width=${width} mode=${mode}`);
       }
     }
   }
@@ -164,8 +163,8 @@ test('head script preloads the three modules, starts the early site.json fetch, 
   }
 });
 
-test('light mode still starts the early site.json fetch but downloads no 3D code', () => {
+test('light mode starts the early site.json fetch and preloads the scene like dark mode', () => {
   const { links, fetched } = runPreload({ mode: 'light' });
-  assert.equal(links.length, 0);
+  assert.deepEqual(links.map((l) => l.href), runPreload({ mode: 'dark' }).links.map((l) => l.href));
   assert.equal(fetched, true);
 });
