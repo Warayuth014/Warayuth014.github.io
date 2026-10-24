@@ -31,6 +31,7 @@ function setLang(lang) {
     try { localStorage.setItem('lang', state.lang); } catch { /* storage blocked */ }
   }
   renderAll();
+  if (state.content) syncAmbient(state.content.theme); // idempotent; relabels the hero 3D toggle
 }
 
 // ---------- 2D effects: one registry, disposed before every re-render ----------
