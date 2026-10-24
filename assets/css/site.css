@@ -142,6 +142,10 @@ main { display: block; }
 }
 .hero-grid { width: 100%; max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 2rem; }
 .hero-copy { max-width: 46rem; }
+/* Live desk: its monitor, keyboard and controller sit under the big title, so the text blocks let pointer
+   events through to the section (the desk raycasts from there); links and buttons stay clickable. */
+.sec-hero:has(.hero-stage.is-live) :is(.hero-copy, .hero-side) { pointer-events: none; }
+.sec-hero:has(.hero-stage.is-live) .hero-copy :is(a, button) { pointer-events: auto; }
 .hero-tag { color: var(--accent1); font-size: 0.9rem; margin-bottom: 1.4rem; }
 .hero-tag .prompt { color: var(--accent3); }
 .hero-name {
