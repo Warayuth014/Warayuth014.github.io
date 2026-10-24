@@ -157,6 +157,17 @@ async function heroListeners(page) {
   await page.mouse.move(...spots.keyboard);
   await sleep(250);
   check(await stageData(page, 'heroHover') === 'keyboard' && await cursor(page) === '', 'keyboard: hover lights keys, cursor stays default');
+  if (shots) { // lit keys fade ~400 ms after the last move, so wiggle and grab the crop straight away
+    const [kx, ky] = spots.keyboard;
+    let wiggling = true;
+    const wiggle = (async () => { for (let i = 0; wiggling; i++) { await page.mouse.move(kx - 60 + (i % 9) * 14, ky); await sleep(20); } })();
+    await sleep(150);
+    const file = resolve(root, 'docs/superpowers/shots/hero-keyboard-hover.jpg');
+    writeFileSync(file, await page.screenshot({ type: 'jpeg', quality: 70, clip: { x: kx - 220, y: ky - 70, width: 440, height: 140 } }));
+    wiggling = false;
+    await wiggle;
+    console.log(`      shot: ${file} (${Math.round(statSync(file).size / 1024)} KB)`);
+  }
   await page.mouse.click(...spots.keyboard);
   await sleep(400);
   check((await page.evaluate(() => scrollY)) === 0, 'keyboard: click does not scroll or navigate');

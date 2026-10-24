@@ -1,5 +1,7 @@
 // Theme application (colour tokens, light-mode derivation, font pair) shared by the home page,
 // the résumé page and the static article pages. Browser only: touches document when called.
+import { LIGHT_CARD } from '../../shared/theme-prepaint.js';
+
 const FONT_PAIRS = {
   default: {
     href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap',
@@ -93,7 +95,7 @@ export function applyTheme(theme, { persist = true } = {}) {
     acc.forEach((a, i) => set(`--accent${i + 1}`, darkenUntil(a, l1, 4.5)));
     set('--fg', fg);
     set('--muted', mix(fg, l1, 0.38));
-    set('--card', 'rgba(255,255,255,.72)');
+    set('--card', LIGHT_CARD);
     set('--line', mix(fg, l1, 0.8));
     set('--on-accent', '#ffffff');
   } else {

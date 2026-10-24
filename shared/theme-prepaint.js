@@ -5,4 +5,7 @@
 //
 // Pure string module (the Worker and tools/render-articles.mjs import it). index.html and
 // resume/index.html carry the same text verbatim; tests/theme-prepaint.test.mjs keeps them identical.
-export const THEME_PREPAINT = `(function(){try{var j=JSON.parse(localStorage.getItem('site.themeVars'));if(!j||typeof j!=='object')return;var r=document.documentElement,l=j.mode==='light',v=j.vars||{},k;r.setAttribute('data-mode',l?'light':'dark');for(k in v)if(/^--(bg[12]|accent[123]|fg|muted|line|on-accent)$/.test(k)&&/^#[0-9a-f]{6}$/i.test(v[k]))r.style.setProperty(k,v[k]);if(l)r.style.setProperty('--card','rgba(255,255,255,.72)')}catch(e){}})();`;
+// The light-mode card colour (a hex-only cache cannot hold rgba): one source for theme.js and the script below.
+export const LIGHT_CARD = 'rgba(255,255,255,.72)';
+
+export const THEME_PREPAINT = `(function(){try{var j=JSON.parse(localStorage.getItem('site.themeVars'));if(!j||typeof j!=='object')return;var r=document.documentElement,l=j.mode==='light',v=j.vars||{},k;r.setAttribute('data-mode',l?'light':'dark');for(k in v)if(/^--(bg[12]|accent[123]|fg|muted|line|on-accent)$/.test(k)&&/^#[0-9a-f]{6}$/i.test(v[k]))r.style.setProperty(k,v[k]);if(l)r.style.setProperty('--card','${LIGHT_CARD}')}catch(e){}})();`;

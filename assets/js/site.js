@@ -139,8 +139,8 @@ async function fetchContent() {
   const custom = sameOriginContentUrl();
   // index.html starts this request from a tiny head script (window.__siteFetch) so it overlaps the
   // download of this module graph; use it once, and fall back to a normal request if it failed.
-  const early = custom ? null : window.__siteFetch;
-  window.__siteFetch = null;
+  const early = custom ? null : globalThis.__siteFetch;
+  globalThis.__siteFetch = null;
   let res = null;
   if (early) { try { res = await early; } catch { res = null; } }
   if (!res?.ok) res = await fetch(custom ?? new URL('../../content/site.json', import.meta.url).href, { cache: 'no-cache' });

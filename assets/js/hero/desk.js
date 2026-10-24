@@ -286,12 +286,20 @@ export function mountDesk(el, opts = {}) {
   legendGeo.rotateX(-Math.PI / 2);
   const legends = new THREE.InstancedMesh(legendGeo, new THREE.MeshBasicMaterial(), KEYS);
   const m4 = new THREE.Matrix4();
-  keyPos.forEach((k, i) => {
-    m4.makeScale(k.sx, 1, 1).setPosition(k.x, 0.032, k.z);
+  const white = new THREE.Color(1, 1, 1);
+  function placeKey(i, lift, grow = 0) {
+    const k = keyPos[i];
+    m4.makeScale(k.sx, 1 + grow, 1 + grow * 0.5).setPosition(k.x, 0.032 + lift, k.z);
     caps.setMatrixAt(i, m4);
-    m4.makeScale(k.sx > 1 ? 4.2 : 1, 1, 1).setPosition(k.x, 0.0405, k.z);
+    m4.makeScale((k.sx > 1 ? 4.2 : 1) * (1 + grow), 1, 1 + grow).setPosition(k.x, 0.0405 + lift + grow * 0.008, k.z);
     legends.setMatrixAt(i, m4);
+  }
+  const lifted = new Uint8Array(KEYS);
+  let liftDirty = false;
+  keyPos.forEach((_, i) => {
+    placeKey(i, 0);
     legends.setColorAt(i, C.a1);
+    caps.setColorAt(i, white);
   });
   caps.instanceMatrix.needsUpdate = true;
   legends.instanceMatrix.needsUpdate = true;
@@ -425,19 +433,27 @@ export function mountDesk(el, opts = {}) {
   // controller steps it); `pulse` briefly boosts them. A theme change resets tint to 0.
   let tint = 0;
   let pulse = 0;
-  function applyNeon() {
-    const [s1, s2, s3] = rotateAccents([C.a1, C.a2, C.a3], tint);
+  const accents = [C.a1, C.a2, C.a3]; // the Color objects are mutated in place, so this never goes stale
+  let neonHex = '';
+  let rot = accents;
+  // retint: the tint or the palette changed (rotate, recolour lights/glows, publish the hex); the per-frame
+  // pulse fade passes false and only rescales the strips and lights, with no allocation.
+  function applyNeon(retint = true) {
+    if (retint) rot = rotateAccents(accents, tint);
+    const [s1, s2, s3] = rot;
     const boost = 1 + pulse * 1.4;
     neonA1.color.copy(s1).multiplyScalar(boost);
     neonA2.color.copy(s2).multiplyScalar(boost);
     neonA3.color.copy(s3).multiplyScalar(boost);
-    lightWall1.color.copy(s1);
-    lightWall3.color.copy(s3);
     lightWall1.intensity = 6 * (1 + pulse * 0.9);
     lightWall3.intensity = 4 * (1 + pulse * 0.9);
+    if (!retint) return;
+    lightWall1.color.copy(s1);
+    lightWall3.color.copy(s3);
     glowA.material.color.copy(s1);
     glowB.material.color.copy(s3);
-    el.dataset.heroNeon = `#${s1.getHexString()}`; // current colour of the first neon strip (read by tools/check-hero.mjs)
+    const hex = `#${s1.getHexString()}`; // current colour of the first neon strip (read by tools/check-hero.mjs)
+    if (hex !== neonHex) { neonHex = hex; el.dataset.heroNeon = hex; }
   }
   onPalette(() => {
     scene.background.copy(C.bg1).multiplyScalar(0.8);
@@ -495,7 +511,7 @@ export function mountDesk(el, opts = {}) {
   const aim = { x: 0, y: 0, pending: false };
   const hov = { monitor: 0, pad: 0 };
   const padY = pad.position.y;
-  const white = new THREE.Color(1, 1, 1);
+  const capTint = new THREE.Color();
   const kbLocal = new THREE.Vector3();
   let hovered = null;
   let rumble = 0;
@@ -566,7 +582,7 @@ export function mountDesk(el, opts = {}) {
     pad.rotation.x = Math.sin(clock * 53 + 1) * 0.05 * rumble;
     if (pulse > 0) {
       pulse = fade(pulse, dt, 0.7);
-      applyNeon();
+      applyNeon(false);
     }
     smoothP += (scrollP - smoothP) * (1 - Math.exp(-dt * 5));
     const k = 1 - Math.exp(-dt * 3);
@@ -595,11 +611,24 @@ export function mountDesk(el, opts = {}) {
       const kp = keyPos[i];
       const wave = 0.5 + 0.5 * Math.sin(kp.x * 4.2 + kp.z * 3 - clock * 1.1);
       tmp.copy(C.a1).lerp(C.a2, wave).lerp(C.a3, Math.max(0, Math.sin(clock * 0.4 + kp.x * 2)) * 0.5);
-      tmp.lerp(white, keyHover[i] * 0.55);
-      tmp.multiplyScalar(0.28 + 0.4 * wave + flash[i] * 0.9 + keyHover[i] * 1.2);
+      const h = keyHover[i];
+      tmp.lerp(C.a1, h * 0.7).lerp(white, h * 0.35); // towards the lead accent, a touch of white at the peak
+      tmp.multiplyScalar(0.28 + 0.4 * wave + flash[i] * 0.9 + h * 2.8);
       legends.setColorAt(i, tmp);
       flash[i] = Math.max(0, flash[i] - dt * 3.5);
-      keyHover[i] = fade(keyHover[i], dt, 0.4);
+      keyHover[i] = fade(h, dt, 0.4);
+      if (h > 0 || lifted[i]) { // a lit key rises, swells and takes the accent on its cap, then settles as it fades
+        placeKey(i, h * 0.012, h * 0.12);
+        caps.setColorAt(i, h > 0 ? capTint.copy(C.a1).multiplyScalar(1 + h * 7) : white);
+        lifted[i] = h > 0 ? 1 : 0;
+        liftDirty = true;
+      }
+    }
+    if (liftDirty) {
+      liftDirty = false;
+      caps.instanceMatrix.needsUpdate = true;
+      caps.instanceColor.needsUpdate = true;
+      legends.instanceMatrix.needsUpdate = true;
     }
     legends.instanceColor.needsUpdate = true;
   }

@@ -5,7 +5,6 @@ import vm from 'node:vm';
 import { THEME_PREPAINT } from '../shared/theme-prepaint.js';
 import { renderArticlePage, renderArticleList } from '../shared/render-article.js';
 import { applyTheme, THEME_CACHE_KEY } from '../assets/js/theme.js';
-import { shouldPreloadHero } from '../assets/js/hero/device.js';
 
 const read = (p) => readFileSync(new URL(`../${p}`, import.meta.url), 'utf8');
 
@@ -91,6 +90,19 @@ test('applyTheme caches only hex tokens, and not when persist is false', () => {
   }
 });
 
+test('light --card in the pre-paint script is the value applyTheme sets', () => {
+  const d = fakeDom();
+  globalThis.document = { documentElement: d.root, getElementById: () => null, createElement: () => ({ setAttribute() {}, getAttribute: () => null }), head: { appendChild() {} } };
+  globalThis.localStorage = d.localStorage;
+  try {
+    applyTheme({ mode: 'light' });
+    assert.equal(d.props['--card'], runPrepaint(JSON.stringify({ mode: 'light', vars: {} })).props['--card']);
+  } finally {
+    delete globalThis.document;
+    delete globalThis.localStorage;
+  }
+});
+
 test('applyTheme survives blocked storage', () => {
   const d = fakeDom();
   globalThis.document = { documentElement: d.root, getElementById: () => null, createElement: () => ({ setAttribute() {}, getAttribute: () => null }), head: { appendChild() {} } };
@@ -128,12 +140,12 @@ function runPreload({ reduced = false, width = 1366, mode = null, search = '' })
   return { links, fetched: Boolean(ctx.__siteFetch) };
 }
 
-test('head script preloads the scene exactly when shouldPreloadHero says so', () => {
+test('head script preloads the scene only when the device will likely go live', () => {
   for (const reduced of [false, true]) {
     for (const width of [390, 480, 481, 1366]) {
       for (const mode of [null, 'dark', 'light']) {
         const { links } = runPreload({ reduced, width, mode });
-        const want = shouldPreloadHero({ reducedMotion: reduced, width, light: mode === 'light' });
+        const want = !reduced && width > 480 && mode !== 'light';
         assert.equal(links.length > 0, want, `reduced=${reduced} width=${width} mode=${mode}`);
       }
     }
