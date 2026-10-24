@@ -12,6 +12,14 @@ export function chooseHeroMode({ reducedMotion, webgl, width, deviceMemory, firs
   return 'live';
 }
 
+// Should the page start downloading the 3D scene before it knows the theme? Only when the device will
+// very likely go live, so phones, reduced-motion users and the light theme never pay the ~257 KB.
+// The same rule is inlined in index.html (a head script cannot import); tests/preload-script.test.mjs
+// runs that script against this function.
+export function shouldPreloadHero({ reducedMotion, width, light } = {}) {
+  return !reducedMotion && !light && width > 480;
+}
+
 export function hasWebGL() {
   try {
     const c = document.createElement('canvas');

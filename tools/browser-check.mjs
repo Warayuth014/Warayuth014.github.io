@@ -4,7 +4,9 @@
 //   --no-webgl        launch Edge with GPU/3D APIs disabled so hasWebGL() is false
 //   --reduced-motion  emulate prefers-reduced-motion: reduce
 //   --frames          average requestAnimationFrame interval over 3 s, after the hero scene is up
-//   --wait <ms>       extra settle time before measuring / screenshot (default 0)
+//   --pointer         with --frames: move the mouse across the hero while measuring
+//   --timing        cold cache + 10 Mbps / 40 ms throttling; print site.json, desk.js, three.js and first-frame times
+//   --wait <ms>      extra settle time before measuring / screenshot (default 0)
 //   --scroll <px>     scroll the page before the screenshot
 //   --viewport        screenshot only the visible viewport (default: full page)
 //   --device-memory <GB>  override navigator.deviceMemory (emulated phones report the desktop value)
@@ -27,6 +29,8 @@ let lang = null;
 let noWebgl = false;
 let reducedMotion = false;
 let frames = false;
+let timing = false;
+let movePointer = false;
 let wait = 0;
 let scroll = 0;
 let deviceMemory = null;
@@ -37,6 +41,8 @@ for (let i = 0; i < args.length; i++) {
   else if (a === '--no-webgl') noWebgl = true;
   else if (a === '--reduced-motion') reducedMotion = true;
   else if (a === '--frames') frames = true;
+  else if (a === '--timing') timing = true;
+  else if (a === '--pointer') movePointer = true;
   else if (a === '--viewport') viewportOnly = true;
   else if (a === '--device-memory') deviceMemory = Number(args[++i]);
   else if (a === '--wait') wait = Number(args[++i]) || 0;
@@ -73,6 +79,7 @@ async function launch() {
 }
 
 const browser = await launch();
+if (timing) { wait = Math.max(wait, 500); }
 const context = await browser.newContext({
   ...(mobile
     ? { viewport: { width: 390, height: 844 }, deviceScaleFactor: 2, isMobile: true, hasTouch: true }
@@ -91,6 +98,13 @@ page.on('pageerror', (e) => problems.push(`pageerror: ${e.message}`));
 page.on('requestfailed', (r) => failed.push(`${r.url()} (${r.failure()?.errorText})`));
 page.on('request', (r) => { try { const h = new URL(r.url()); if (/^https?:$/.test(h.protocol) && h.host !== new URL(url).host) hosts.add(h.host); } catch { /* ignore */ } });
 
+if (timing) {
+  // cold cache + ~10 Mbps down / 40 ms latency, through the DevTools protocol
+  const cdp = await context.newCDPSession(page);
+  await cdp.send('Network.enable');
+  await cdp.send('Network.setCacheDisabled', { cacheDisabled: true });
+  await cdp.send('Network.emulateNetworkConditions', { offline: false, latency: 40, downloadThroughput: (10 * 1024 * 1024) / 8, uploadThroughput: (5 * 1024 * 1024) / 8 });
+}
 await page.goto(url, { waitUntil: 'networkidle' });
 await page.evaluate(() => document.fonts?.ready);
 // the hero scene mounts after first paint: wait until it settles on live / poster / off
@@ -105,8 +119,40 @@ const heroMode = await page.evaluate(() => {
   return s ? `${s.dataset.heroMode ?? 'none'} (canvas: ${Boolean(s.querySelector('canvas'))}, poster: ${Boolean(s.querySelector('.hero-poster'))}, threads: ${Boolean(document.querySelector('canvas.threads'))})` : 'no hero';
 });
 
+let timings = null;
+if (timing) {
+  // every number is milliseconds since navigation start (performance.now() / resource entries share that origin)
+  timings = await page.evaluate(() => {
+    const res = performance.getEntriesByType('resource');
+    const find = (re) => res.find((r) => re.test(r.name));
+    const round = (v) => (typeof v === 'number' && v > 0 ? Math.round(v) : null);
+    const site = find(/content\/site\.json/);
+    const entry = find(/hero\/desk\.js/);
+    const three = find(/three\.module\.js/);
+    const fcp = performance.getEntriesByName('first-contentful-paint')[0];
+    const stage = document.querySelector('.hero-stage');
+    return {
+      'first contentful paint': round(fcp?.startTime),
+      'site.js fetched': round(find(/js\/site\.js/)?.responseEnd),
+      'site.json fetched': round(site?.responseEnd),
+      'desk.js start': round(entry?.startTime),
+      'three.module.js start': round(three?.startTime),
+      'three.module.js end': round(three?.responseEnd),
+      'first live frame': round(Number(stage?.dataset.heroFirstFrame)),
+    };
+  });
+}
+
 let frameMs = null;
 if (frames) {
+  let measuring = true;
+  // --pointer: sweep the mouse over the hero while measuring (hover raycasts, key glow, parallax)
+  const sweep = !movePointer ? Promise.resolve() : (async () => {
+    for (let t = 0; measuring; t += 0.12) {
+      await page.mouse.move(683 + Math.cos(t) * 560, 400 + Math.sin(t * 1.3) * 300);
+      await page.waitForTimeout(16);
+    }
+  })();
   frameMs = await page.evaluate(() => new Promise((done) => {
     let n = 0;
     let first = 0;
@@ -118,6 +164,8 @@ if (frames) {
     };
     requestAnimationFrame(loop);
   }));
+  measuring = false;
+  await sweep;
 }
 if (scroll) {
   await page.evaluate((y) => window.scrollTo(0, y), scroll);
@@ -150,6 +198,10 @@ await browser.close();
 console.log(`url: ${url}`);
 console.log(`title: ${metrics.title}`);
 console.log(`hero: ${heroMode}`);
+if (timings) {
+  console.log('timing (ms since navigation, cold cache, 10 Mbps / 40 ms):');
+  for (const [k, v] of Object.entries(timings)) console.log(`  ${k.padEnd(24)} ${v ?? 'n/a'}`);
+}
 if (frameMs !== null) console.log(`average frame time over 3 s: ${frameMs.toFixed(2)} ms (${(1000 / frameMs).toFixed(1)} fps)`);
 console.log(`sections: ${metrics.sections.join(', ')}`);
 console.log(`horizontal overflow: ${overflow ? `YES (${metrics.scrollWidth} > ${metrics.clientWidth})` : 'no'}`);
