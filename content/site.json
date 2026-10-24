@@ -1,0 +1,196 @@
+{
+  "version": 1,
+  "theme": {
+    "bg1": "#0b0f1d",
+    "bg2": "#1d0f2e",
+    "accent1": "#7cf3ff",
+    "accent2": "#a98bff",
+    "accent3": "#ff6fd1",
+    "mode": "dark",
+    "fontPair": "default",
+    "effects": { "hero3d": true, "threads": true }
+  },
+  "nav": ["about", "projects", "skills", "journey", "articles", "contact"],
+  "ui": {
+    "tagline": { "th": "กลางวัน dev · กลางคืน gamer", "en": "dev by day · gamer by night" },
+    "sectionTitles": {
+      "about": { "th": "เกี่ยวกับผม", "en": "About me" },
+      "projects": { "th": "ผลงาน", "en": "Projects" },
+      "skills": { "th": "ทักษะ", "en": "Skills" },
+      "journey": { "th": "เส้นทาง", "en": "Journey" },
+      "articles": { "th": "บทความ", "en": "Articles" },
+      "contact": { "th": "ติดต่อ", "en": "Contact" }
+    },
+    "contactLead": { "th": "มีงานหรืออยากคุยกัน ส่งข้อความมาได้เลย", "en": "Got a project or just want to talk? Drop me a line." },
+    "footer": { "th": "© Warayuth Bunbanlu", "en": "© Warayuth Bunbanlu" }
+  },
+  "meta": {
+    "title": { "th": "Warayuth Bunbanlu | กลางวัน dev · กลางคืน gamer", "en": "Warayuth Bunbanlu | dev by day · gamer by night" },
+    "description": {
+      "th": "เว็บส่วนตัวของ Warayuth Bunbanlu นักพัฒนาซอฟต์แวร์ในกรุงเทพ ผลงาน ทักษะ และบทความทั้งภาษาไทยและอังกฤษ",
+      "en": "Personal site of Warayuth Bunbanlu, a software developer in Bangkok. Projects, skills and notes in Thai and English."
+    }
+  },
+  "sections": [
+    { "id": "hero", "visible": true },
+    { "id": "about", "visible": true },
+    { "id": "projects", "visible": true },
+    { "id": "skills", "visible": true },
+    { "id": "journey", "visible": true },
+    { "id": "articles", "visible": true },
+    { "id": "contact", "visible": true }
+  ],
+  "hero": {
+    "name": { "th": "Warayuth Bunbanlu", "en": "Warayuth Bunbanlu" },
+    "intro": {
+      "th": "กลางวันเขียนโค้ด กลางคืนเล่นเกม ผมชอบสร้างของที่ใช้งานได้จริง แล้วค่อย ๆ ขัดให้เนียน ยินดีต้อนรับเข้ามาดูโต๊ะทำงานของผมครับ",
+      "en": "Dev by day, gamer by night. I like building things that actually work, then polishing them bit by bit. Welcome to my desk."
+    },
+    "ctaWork": { "th": "ดูผลงาน", "en": "See my work" },
+    "ctaResume": { "th": "เรซูเม่", "en": "Résumé" }
+  },
+  "about": {
+    "photo": null,
+    "story": {
+      "th": "สวัสดีครับ ผมชื่อ Warayuth จบวิทยาการคอมพิวเตอร์ แล้วเริ่มทำงานเป็นนักพัฒนาซอฟต์แวร์ตั้งแต่ปี 2025 ผมสนุกกับการแปลงไอเดียให้กลายเป็นแอปและหน้าเว็บที่คนใช้ได้จริง ทั้งฝั่งหน้าบ้านและหลังบ้าน เวลาว่างผมชอบเล่นเกม ตีแบด และหัดทำโปรเจกต์เล็ก ๆ ไปเรื่อย ๆ เพื่อให้ฝีมือพัฒนาขึ้นทุกวัน",
+      "en": "Hi, I am Warayuth. I studied computer science and started working as a software developer in 2025. I enjoy turning ideas into apps and web pages people can really use, on both the front end and the back end. Outside of work I play games, play badminton, and keep building small side projects so I get a little better every day."
+    },
+    "facts": [
+      { "icon": "pin", "label": { "th": "ที่อยู่", "en": "Based in" }, "value": { "th": "กรุงเทพฯ ประเทศไทย", "en": "Bangkok, Thailand" } },
+      { "icon": "language", "label": { "th": "ภาษา", "en": "Languages" }, "value": { "th": "ไทย (ภาษาแม่), อังกฤษ (พื้นฐาน–ปานกลาง)", "en": "Thai (native), English (basic to intermediate)" } },
+      { "icon": "gamepad", "label": { "th": "งานอดิเรก", "en": "Hobbies" }, "value": { "th": "เล่นเกม, ตีแบดมินตัน", "en": "Gaming, badminton" } }
+    ]
+  },
+  "projects": [
+    {
+      "id": "followguide",
+      "title": { "th": "FollowGuide", "en": "FollowGuide" },
+      "summary": {
+        "th": "คู่มือทีละขั้นสำหรับเช็กว่าใครไม่ฟอลกลับบน Instagram",
+        "en": "A step-by-step guide to see who doesn't follow you back on Instagram"
+      },
+      "body": {
+        "th": "เว็บเล็ก ๆ ที่พาดาวน์โหลดข้อมูลบัญชี Instagram ของตัวเอง แล้วเทียบรายชื่อคนที่เราฟอลกับคนที่ฟอลเรา ให้เห็นว่าใครไม่ฟอลกลับหรือเพิ่งหายไป ประมวลผลบนเครื่องของผู้ใช้เอง",
+        "en": "A small web tool that walks you through downloading your own Instagram data, then compares who you follow with who follows you to show who doesn't follow back or has recently gone. Everything is processed on the user's own device."
+      },
+      "tags": ["HTML", "CSS", "JavaScript"],
+      "image": null,
+      "links": { "demo": "/ig-followguide/" }
+    },
+    {
+      "id": "gearupit",
+      "title": { "th": "GearUpIT", "en": "GearUpIT" },
+      "summary": {
+        "th": "โปรเจกต์ฝึกเขียนหน้าเว็บ Frontend จากบูทแคมป์เขียนโค้ด",
+        "en": "A front-end practice project from a coding bootcamp"
+      },
+      "body": {
+        "th": "งานฝึกหน้าเว็บร้านขายอุปกรณ์ไอทีฝั่งหน้าบ้านล้วน ๆ จากบูทแคมป์เขียนโค้ด สร้างต่อจากเทมเพลตของคอร์ส เป็นแบบฝึกหัด ไม่มีระบบหลังบ้านและไม่มีการชำระเงินจริง",
+        "en": "A front-end-only IT gear shop page, a practice project from a coding bootcamp built on the course template. It is an exercise, with no back end and no real payments."
+      },
+      "tags": ["HTML", "CSS", "JavaScript"],
+      "image": null,
+      "links": { "demo": "/projects/gearupit/" }
+    },
+    {
+      "id": "ariadne",
+      "title": { "th": "Ariadne", "en": "Ariadne" },
+      "summary": {
+        "th": "เครื่องมืออ่านโค้ด .NET แบบอ่านอย่างเดียว ตามรอยเส้นด้ายผ่านโค้ด",
+        "en": "A read-only code tracer for .NET solutions: follow the thread through the code"
+      },
+      "body": {
+        "th": "เครื่องมือที่ผมทำไว้ใช้เองสำหรับไล่ดูว่าโค้ดในโซลูชัน .NET (C# และ Razor) เรียกต่อกันอย่างไร อ่านอย่างเดียว ไม่แก้ไฟล์ใด ๆ ตอนนี้ยังเป็นโปรเจกต์ส่วนตัว จึงยังไม่มีลิงก์ให้เปิดดู",
+        "en": "A tool I built for my own use to trace how code in a .NET solution (C# and Razor) calls into other code. It is read-only and never edits files. It is still a private project, so there is no link to open yet."
+      },
+      "tags": ["C#", ".NET", "Razor"],
+      "image": null,
+      "links": {}
+    },
+    {
+      "id": "zero-to-senior-flutter-dotnet-course",
+      "title": { "th": "คอร์ส Flutter + .NET จากศูนย์", "en": "Flutter + .NET from zero course" },
+      "summary": {
+        "th": "บันทึกการเรียนรู้ทำแอป Flutter คู่กับ .NET ตั้งแต่พื้นฐาน",
+        "en": "My learning notes on building Flutter apps with a .NET back end, from the basics up"
+      },
+      "body": {
+        "th": "รวมตัวอย่างโค้ดและแบบฝึกหัดที่ผมเขียนตามระหว่างเรียนรู้การทำแอปมือถือด้วย Flutter ต่อกับ API ที่เขียนด้วย .NET เก็บไว้เปิดดูย้อนหลังและแชร์ให้คนที่กำลังเริ่มเหมือนกัน",
+        "en": "Code samples and exercises I wrote while learning to build mobile apps with Flutter that talk to a .NET API. Kept for my own reference and to share with others who are starting out too."
+      },
+      "tags": ["Flutter", "Dart", "C#", ".NET"],
+      "image": null,
+      "links": { "repo": "https://github.com/Warayuth014/zero-to-senior-flutter-dotnet-course" }
+    },
+    {
+      "id": "projecttdee",
+      "title": { "th": "ProjectTDEE", "en": "ProjectTDEE" },
+      "summary": {
+        "th": "หน้าเว็บเล็ก ๆ สำหรับคำนวณ TDEE",
+        "en": "A small TDEE calculator web page"
+      },
+      "body": {
+        "th": "หน้าเว็บเล็ก ๆ สำหรับคำนวณ TDEE เขียนด้วย HTML และ JavaScript",
+        "en": "A small TDEE calculator web page written in HTML and JavaScript."
+      },
+      "tags": ["HTML", "JavaScript"],
+      "image": null,
+      "links": { "repo": "https://github.com/Warayuth014/ProjectTDEE" }
+    },
+    {
+      "id": "sp333-cafe",
+      "title": { "th": "SP333 Cafe", "en": "SP333 Cafe" },
+      "summary": {
+        "th": "แบบฝึกหัดทำเว็บไซต์คาเฟ่ ด้วย HTML, CSS และ JavaScript",
+        "en": "A café website exercise in HTML, CSS and JavaScript"
+      },
+      "body": {
+        "th": "แบบฝึกหัดทำเว็บไซต์คาเฟ่ ด้วย HTML, CSS และ JavaScript",
+        "en": "A café website exercise in HTML, CSS and JavaScript."
+      },
+      "tags": ["HTML", "CSS", "JavaScript"],
+      "image": null,
+      "links": { "repo": "https://github.com/Warayuth014/SP333_CAFE" }
+    }
+  ],
+  "skills": [
+    { "group": { "th": "มือถือ / หน้าเว็บ", "en": "Mobile / Frontend" }, "items": ["Flutter", "Dart", "HTML", "CSS", "JavaScript"] },
+    { "group": { "th": "หลังบ้าน", "en": "Backend" }, "items": ["C#", ".NET", "ASP.NET Core", "REST API"] },
+    { "group": { "th": "ข้อมูล", "en": "Data" }, "items": ["SQL"] },
+    { "group": { "th": "เครื่องมือ", "en": "Tools" }, "items": ["Git", "GitHub", "PowerShell", "VS Code"] }
+  ],
+  "journey": [
+    {
+      "when": { "th": "2025", "en": "2025" },
+      "title": { "th": "วิทยาศาสตรบัณฑิต สาขาวิทยาการคอมพิวเตอร์", "en": "B.Sc. in Computer Science" },
+      "place": { "th": "มหาวิทยาลัยหอการค้าไทย", "en": "University of the Thai Chamber of Commerce" }
+    },
+    {
+      "when": { "th": "ม.ค. – เม.ย. 2025", "en": "Jan – Apr 2025" },
+      "title": { "th": "Backend developer (.NET)", "en": "Backend developer (.NET)" },
+      "place": { "th": "Jupiter Software", "en": "Jupiter Software" }
+    },
+    {
+      "when": { "th": "ก.ย. 2025 – ปัจจุบัน", "en": "Sep 2025 – present" },
+      "title": { "th": "Full-stack developer (Flutter และ .NET)", "en": "Full-stack developer (Flutter & .NET)" },
+      "place": { "th": "ACETEC Technology", "en": "ACETEC Technology" }
+    }
+  ],
+  "contact": {
+    "email": "b.warayuth@gmail.com",
+    "phone": null,
+    "links": [
+      { "kind": "github", "url": "https://github.com/Warayuth014" },
+      { "kind": "linkedin", "url": "https://www.linkedin.com/in/warayut-bunbanlu-1b621b301/" },
+      { "kind": "facebook", "url": "https://www.facebook.com/warayut.bunbanlu/" },
+      { "kind": "instagram", "url": "https://www.instagram.com/_wryh._" }
+    ]
+  },
+  "resume": { "file": null, "kind": null },
+  "resumePage": {
+    "title": { "th": "เรซูเม่", "en": "Résumé" },
+    "comingSoon": { "th": "เร็ว ๆ นี้", "en": "Coming soon" },
+    "comingSoonText": { "th": "เรซูเม่กำลังจัดให้เรียบร้อย ไว้กลับมาดูใหม่นะครับ", "en": "My résumé is still being put together. Please check back soon." }
+  },
+  "workerUrl": ""
+}
