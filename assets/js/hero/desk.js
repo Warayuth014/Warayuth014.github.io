@@ -8,6 +8,7 @@
 //   capture       deterministic still for tools/capture-poster.mjs (fixed camera, text pre-typed,
 //                 preserveDrawingBuffer so toDataURL works)
 import * as THREE from 'three';
+import { isUiTarget, rotateAccents, nextTint, keysNear, fade, ease } from './interact.js';
 
 const DEFAULT_PALETTE = { bg1: '#0b0f1d', bg2: '#1d0f2e', accent1: '#7cf3ff', accent2: '#a98bff', accent3: '#ff6fd1' };
 const hex = (v, d) => (typeof v === 'string' && /^#[0-9a-fA-F]{6}$/.test(v) ? v : d);
@@ -128,6 +129,11 @@ function createScreen(snippets, w, h) {
     texture,
     setInk(next) { ink = { ...ink, ...next }; st.dirty = true; },
     complete() { st.ci = snippets[st.si].length; st.dirty = true; },
+    // a short burst of fast typing (a click on the keyboard); a finished snippet moves on right away
+    burst(n) {
+      st.acc += n;
+      if (st.ci >= snippets[st.si].length) st.hold = Math.max(st.hold, 3.3);
+    },
     // returns how many characters were typed this step
     step(dt, speed) {
       let typed = 0;
@@ -251,7 +257,7 @@ export function mountDesk(el, opts = {}) {
     g.add(base, neck, frame, face);
     scene.add(g);
     screens.push(scr);
-    return { scr, center: new THREE.Vector3(x, 0.035 + cy, z) };
+    return { scr, face, group: g, cy, size: [w, h], center: new THREE.Vector3(x, 0.035 + cy, z) };
   }
   const main = monitor(-0.35, -0.12, 0, 1.3, 0.76, SNIPPETS_MAIN);
   const side = monitor(1.05, -0.05, -0.42, 0.9, 0.56, SNIPPETS_SIDE);
@@ -280,17 +286,26 @@ export function mountDesk(el, opts = {}) {
   legendGeo.rotateX(-Math.PI / 2);
   const legends = new THREE.InstancedMesh(legendGeo, new THREE.MeshBasicMaterial(), KEYS);
   const m4 = new THREE.Matrix4();
-  keyPos.forEach((k, i) => {
-    m4.makeScale(k.sx, 1, 1).setPosition(k.x, 0.032, k.z);
+  const white = new THREE.Color(1, 1, 1);
+  function placeKey(i, lift, grow = 0) {
+    const k = keyPos[i];
+    m4.makeScale(k.sx, 1 + grow, 1 + grow * 0.5).setPosition(k.x, 0.032 + lift, k.z);
     caps.setMatrixAt(i, m4);
-    m4.makeScale(k.sx > 1 ? 4.2 : 1, 1, 1).setPosition(k.x, 0.0405, k.z);
+    m4.makeScale((k.sx > 1 ? 4.2 : 1) * (1 + grow), 1, 1 + grow).setPosition(k.x, 0.0405 + lift + grow * 0.008, k.z);
     legends.setMatrixAt(i, m4);
+  }
+  const lifted = new Uint8Array(KEYS);
+  let liftDirty = false;
+  keyPos.forEach((_, i) => {
+    placeKey(i, 0);
     legends.setColorAt(i, C.a1);
+    caps.setColorAt(i, white);
   });
   caps.instanceMatrix.needsUpdate = true;
   legends.instanceMatrix.needsUpdate = true;
   kb.add(caps, legends);
   const flash = new Float32Array(KEYS);
+  const keyHover = new Float32Array(KEYS); // 1 when the pointer is on a key, fades out over ~400 ms
 
   // ----- glow sprites (cheap bloom) -----
   const glowTex = glowTexture();
@@ -343,6 +358,20 @@ export function mountDesk(el, opts = {}) {
   padLight.position.set(0, 0.0605, -0.065);
   pad.add(padLight);
   scene.add(pad);
+
+  // ----- hit volumes for the pointer (never drawn; slightly generous so small things are easy to hit) -----
+  const hitMat = new THREE.MeshBasicMaterial();
+  const hitBox = (parent, w, h, d, x, y, z) => {
+    const m = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), hitMat);
+    m.position.set(x, y, z);
+    m.visible = false;
+    parent.add(m);
+    return m;
+  };
+  const hitMonitor = hitBox(main.group, main.size[0] + 0.1, main.size[1] + 0.1, 0.1, 0, main.cy, 0.02);
+  const hitPad = hitBox(pad, 0.32, 0.1, 0.22, 0, 0.04, 0.02);
+  const hitKeys = hitBox(kb, 0.94, 0.06, 0.35, 0, 0.03, 0);
+  const hitTargets = [hitMonitor, hitPad, hitKeys];
 
   // ----- desk lamp -----
   const lampBase = new THREE.Mesh(new THREE.CylinderGeometry(0.09, 0.1, 0.02, 20), plastic);
@@ -400,17 +429,37 @@ export function mountDesk(el, opts = {}) {
     C.a3.set(pal.accent3);
     binders.forEach((fn) => fn());
   }
+  // The neon strips, wall lights and wall glows take the accents rotated by `tint` (a click on the
+  // controller steps it); `pulse` briefly boosts them. A theme change resets tint to 0.
+  let tint = 0;
+  let pulse = 0;
+  const accents = [C.a1, C.a2, C.a3]; // the Color objects are mutated in place, so this never goes stale
+  let neonHex = '';
+  let rot = accents;
+  // retint: the tint or the palette changed (rotate, recolour lights/glows, publish the hex); the per-frame
+  // pulse fade passes false and only rescales the strips and lights, with no allocation.
+  function applyNeon(retint = true) {
+    if (retint) rot = rotateAccents(accents, tint);
+    const [s1, s2, s3] = rot;
+    const boost = 1 + pulse * 1.4;
+    neonA1.color.copy(s1).multiplyScalar(boost);
+    neonA2.color.copy(s2).multiplyScalar(boost);
+    neonA3.color.copy(s3).multiplyScalar(boost);
+    lightWall1.intensity = 6 * (1 + pulse * 0.9);
+    lightWall3.intensity = 4 * (1 + pulse * 0.9);
+    if (!retint) return;
+    lightWall1.color.copy(s1);
+    lightWall3.color.copy(s3);
+    glowA.material.color.copy(s1);
+    glowB.material.color.copy(s3);
+    const hex = `#${s1.getHexString()}`; // current colour of the first neon strip (read by tools/check-hero.mjs)
+    if (hex !== neonHex) { neonHex = hex; el.dataset.heroNeon = hex; }
+  }
   onPalette(() => {
     scene.background.copy(C.bg1).multiplyScalar(0.8);
     wallMat.color.copy(C.bg2).lerp(C.bg1, 0.35).multiplyScalar(1.5);
-    neonA1.color.copy(C.a1);
-    neonA2.color.copy(C.a2);
-    neonA3.color.copy(C.a3);
-    lightWall1.color.copy(C.a1);
-    lightWall3.color.copy(C.a3);
+    applyNeon();
     lightKb.color.copy(C.a2);
-    glowA.material.color.copy(C.a1);
-    glowB.material.color.copy(C.a3);
     glowK.material.color.copy(C.a2);
     const css = (c) => `#${c.getHexString()}`; // linear -> sRGB hex for the 2D canvas
     const ink = { kw: css(C.a2), str: css(C.a3), type: css(C.a1) };
@@ -453,10 +502,88 @@ export function mountDesk(el, opts = {}) {
     scrollP = clamp(window.scrollY / Math.max(1, parent.offsetHeight * 0.85), 0, 1);
   };
 
+  // ----- pointer interaction: monitor, controller, keyboard -----
+  // Hover is raycast at most once per frame (the move handler only stores the latest position);
+  // a click or tap is raycast on the spot. Events that start on text or a control are ignored.
+  const host = el.parentElement ?? el; // the hero section: the canvas itself sits behind the text
+  const ray = new THREE.Raycaster();
+  const ndc = new THREE.Vector2();
+  const aim = { x: 0, y: 0, pending: false };
+  const hov = { monitor: 0, pad: 0 };
+  const padY = pad.position.y;
+  const capTint = new THREE.Color();
+  const kbLocal = new THREE.Vector3();
+  let hovered = null;
+  let rumble = 0;
+
+  function castAt(cx, cy) {
+    const r = canvas.getBoundingClientRect();
+    if (r.width === 0 || r.height === 0 || scrollP > 0.6) return null; // scrolled past the hero
+    ndc.set(((cx - r.left) / r.width) * 2 - 1, -((cy - r.top) / r.height) * 2 + 1);
+    ray.setFromCamera(ndc, camera);
+    const hit = ray.intersectObjects(hitTargets, false)[0];
+    if (!hit) return null;
+    return { kind: hit.object === hitMonitor ? 'monitor' : hit.object === hitPad ? 'pad' : 'keyboard', point: hit.point };
+  }
+  function lightKeys(point, level) {
+    kbLocal.copy(point);
+    kb.worldToLocal(kbLocal);
+    for (const { i, w } of keysNear(keyPos, kbLocal.x, kbLocal.z)) keyHover[i] = Math.max(keyHover[i], w * level);
+  }
+  function setHovered(kind) {
+    if (kind === hovered) return;
+    hovered = kind;
+    document.body.style.cursor = kind === 'monitor' || kind === 'pad' ? 'pointer' : '';
+    if (kind) el.dataset.heroHover = kind;
+    else delete el.dataset.heroHover;
+  }
+  const onHostMove = (e) => {
+    if (e.pointerType === 'touch') return; // touch only taps; it never needs hover
+    if (isUiTarget(e.target)) { aim.pending = false; setHovered(null); return; }
+    aim.x = e.clientX;
+    aim.y = e.clientY;
+    aim.pending = true;
+  };
+  const onHostLeave = () => { aim.pending = false; setHovered(null); };
+  const onHostClick = (e) => {
+    if (disposed || isUiTarget(e.target)) return;
+    const hit = castAt(e.clientX, e.clientY);
+    if (!hit) return;
+    if (hit.kind === 'monitor') {
+      document.getElementById('projects')?.scrollIntoView({ behavior: reducedMotion ? 'auto' : 'smooth', block: 'start' });
+    } else if (hit.kind === 'pad') {
+      tint = nextTint(tint);
+      pulse = 1;
+      rumble = 1;
+      applyNeon();
+    } else {
+      main.scr.burst(60);
+      lightKeys(hit.point, 1);
+    }
+  };
+
   // ----- loop -----
   let clock = 0;
   function update(dt) {
     clock += dt;
+    if (aim.pending) {
+      aim.pending = false;
+      const hit = castAt(aim.x, aim.y);
+      setHovered(hit?.kind ?? null);
+      if (hit?.kind === 'keyboard') lightKeys(hit.point, 1);
+    }
+    hov.monitor = ease(hov.monitor, hovered === 'monitor' ? 1 : 0, dt, 9);
+    hov.pad = ease(hov.pad, hovered === 'pad' ? 1 : 0, dt, 9);
+    main.face.material.color.setScalar(1 + hov.monitor * 0.5);
+    glowA.material.opacity = 0.28 + hov.monitor * 0.22;
+    rumble = fade(rumble, dt, 0.5);
+    pad.position.y = padY + hov.pad * 0.012;
+    pad.rotation.z = Math.sin(clock * 70) * 0.07 * rumble;
+    pad.rotation.x = Math.sin(clock * 53 + 1) * 0.05 * rumble;
+    if (pulse > 0) {
+      pulse = fade(pulse, dt, 0.7);
+      applyNeon(false);
+    }
     smoothP += (scrollP - smoothP) * (1 - Math.exp(-dt * 5));
     const k = 1 - Math.exp(-dt * 3);
     pointer.sx += (pointer.x - pointer.sx) * k;
@@ -484,9 +611,24 @@ export function mountDesk(el, opts = {}) {
       const kp = keyPos[i];
       const wave = 0.5 + 0.5 * Math.sin(kp.x * 4.2 + kp.z * 3 - clock * 1.1);
       tmp.copy(C.a1).lerp(C.a2, wave).lerp(C.a3, Math.max(0, Math.sin(clock * 0.4 + kp.x * 2)) * 0.5);
-      tmp.multiplyScalar(0.28 + 0.4 * wave + flash[i] * 0.9);
+      const h = keyHover[i];
+      tmp.lerp(C.a1, h * 0.7).lerp(white, h * 0.35); // towards the lead accent, a touch of white at the peak
+      tmp.multiplyScalar(0.28 + 0.4 * wave + flash[i] * 0.9 + h * 2.8);
       legends.setColorAt(i, tmp);
       flash[i] = Math.max(0, flash[i] - dt * 3.5);
+      keyHover[i] = fade(h, dt, 0.4);
+      if (h > 0 || lifted[i]) { // a lit key rises, swells and takes the accent on its cap, then settles as it fades
+        placeKey(i, h * 0.012, h * 0.12);
+        caps.setColorAt(i, h > 0 ? capTint.copy(C.a1).multiplyScalar(1 + h * 7) : white);
+        lifted[i] = h > 0 ? 1 : 0;
+        liftDirty = true;
+      }
+    }
+    if (liftDirty) {
+      liftDirty = false;
+      caps.instanceMatrix.needsUpdate = true;
+      caps.instanceColor.needsUpdate = true;
+      legends.instanceMatrix.needsUpdate = true;
     }
     legends.instanceColor.needsUpdate = true;
   }
@@ -528,6 +670,11 @@ export function mountDesk(el, opts = {}) {
     ro.disconnect();
     window.removeEventListener('pointermove', onPointer);
     window.removeEventListener('scroll', onScroll);
+    host.removeEventListener('pointermove', onHostMove);
+    host.removeEventListener('pointerleave', onHostLeave);
+    host.removeEventListener('click', onHostClick);
+    setHovered(null);
+    delete el.dataset.heroNeon;
     document.removeEventListener('visibilitychange', sync);
     canvas.removeEventListener('webglcontextlost', onContextLost);
     const textures = new Set([glowTex]);
@@ -561,6 +708,9 @@ export function mountDesk(el, opts = {}) {
   if (animate) {
     window.addEventListener('pointermove', onPointer, { passive: true });
     window.addEventListener('scroll', onScroll, { passive: true });
+    host.addEventListener('pointermove', onHostMove, { passive: true });
+    host.addEventListener('pointerleave', onHostLeave);
+    host.addEventListener('click', onHostClick);
     document.addEventListener('visibilitychange', sync);
     io = new IntersectionObserver((entries) => {
       inView = entries.some((e) => e.isIntersecting);
@@ -595,7 +745,9 @@ export function mountDesk(el, opts = {}) {
     dispose,
     setTheme(theme) {
       if (disposed) return;
-      Object.assign(pal, readPalette(theme));
+      const next = readPalette(theme);
+      if (Object.keys(next).some((k) => next[k] !== pal[k])) { tint = 0; pulse = 0; } // a new theme starts from its own accent order
+      Object.assign(pal, next);
       applyPalette();
       if (!animate) renderOnce();
     },

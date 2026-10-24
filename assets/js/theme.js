@@ -1,5 +1,7 @@
 // Theme application (colour tokens, light-mode derivation, font pair) shared by the home page,
 // the résumé page and the static article pages. Browser only: touches document when called.
+import { LIGHT_CARD } from '../../shared/theme-prepaint.js';
+
 const FONT_PAIRS = {
   default: {
     href: 'https://fonts.googleapis.com/css2?family=IBM+Plex+Sans+Thai:wght@400;500;600&family=Space+Grotesk:wght@500;700&display=swap',
@@ -61,14 +63,27 @@ function loadFont(pair) {
   return def;
 }
 
-export function applyTheme(theme) {
+// The last applied colours are kept in localStorage so the next page load can paint them before the
+// network answers (see shared/theme-prepaint.js). Only #rrggbb values are stored.
+export const THEME_CACHE_KEY = 'site.themeVars';
+
+function cacheThemeVars(light, vars) {
+  try {
+    const hexVars = Object.fromEntries(Object.entries(vars).filter(([, v]) => isHex(v)));
+    localStorage.setItem(THEME_CACHE_KEY, JSON.stringify({ mode: light ? 'light' : 'dark', vars: hexVars }));
+  } catch { /* storage blocked */ }
+}
+
+// persist: false for previews and ?content= fixtures, which must not leak into what real visitors paint first.
+export function applyTheme(theme, { persist = true } = {}) {
   const th = theme && typeof theme === 'object' ? theme : {};
   const light = th.mode === 'light';
   const bg1 = pick(th.bg1, '#0b0f1d');
   const bg2 = pick(th.bg2, '#1d0f2e');
   const acc = [pick(th.accent1, '#7cf3ff'), pick(th.accent2, '#a98bff'), pick(th.accent3, '#ff6fd1')];
   const root = document.documentElement;
-  const set = (k, v) => root.style.setProperty(k, v);
+  const vars = {};
+  const set = (k, v) => { vars[k] = v; root.style.setProperty(k, v); };
   root.dataset.mode = light ? 'light' : 'dark';
 
   if (light) {
@@ -80,7 +95,7 @@ export function applyTheme(theme) {
     acc.forEach((a, i) => set(`--accent${i + 1}`, darkenUntil(a, l1, 4.5)));
     set('--fg', fg);
     set('--muted', mix(fg, l1, 0.38));
-    set('--card', 'rgba(255,255,255,.72)');
+    set('--card', LIGHT_CARD);
     set('--line', mix(fg, l1, 0.8));
     set('--on-accent', '#ffffff');
   } else {
@@ -93,6 +108,8 @@ export function applyTheme(theme) {
     set('--line', 'rgba(255,255,255,.12)');
     set('--on-accent', '#0b0f1d');
   }
+
+  if (persist) cacheThemeVars(light, vars);
 
   const f = loadFont(th.fontPair);
   set('--font-body', f.body);

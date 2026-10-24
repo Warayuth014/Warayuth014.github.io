@@ -5,6 +5,7 @@ import { createServer } from 'node:http';
 import { readFile, stat } from 'node:fs/promises';
 import { extname, join, normalize, resolve, sep } from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { gzipSync } from 'node:zlib';
 
 const root = resolve(fileURLToPath(new URL('..', import.meta.url)));
 const MIME = {
@@ -47,11 +48,15 @@ const server = createServer(async (req, res) => {
   const file = await resolveFile(req.url ?? '/');
   const target = file ?? join(root, '404.html');
   try {
-    const body = await readFile(target);
-    res.writeHead(file ? 200 : 404, {
-      'content-type': MIME[extname(target).toLowerCase()] ?? 'application/octet-stream',
-      'cache-control': 'no-store',
-    });
+    let body = await readFile(target);
+    const type = MIME[extname(target).toLowerCase()] ?? 'application/octet-stream';
+    const headers = { 'content-type': type, 'cache-control': 'no-store' };
+    // GitHub Pages gzips text; do the same so transfer sizes (and --timing) are realistic.
+    if (/^(text|application\/json)/.test(type) && /\bgzip\b/.test(req.headers['accept-encoding'] ?? '')) {
+      body = gzipSync(body);
+      headers['content-encoding'] = 'gzip';
+    }
+    res.writeHead(file ? 200 : 404, headers);
     res.end(req.method === 'HEAD' ? undefined : body);
   } catch {
     res.writeHead(404, { 'content-type': 'text/plain; charset=utf-8' });

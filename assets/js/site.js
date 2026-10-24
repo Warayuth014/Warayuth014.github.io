@@ -136,8 +136,14 @@ function sameOriginContentUrl() {
 }
 
 async function fetchContent() {
-  const url = sameOriginContentUrl() ?? new URL('../../content/site.json', import.meta.url).href;
-  const res = await fetch(url, { cache: 'no-cache' });
+  const custom = sameOriginContentUrl();
+  // index.html starts this request from a tiny head script (window.__siteFetch) so it overlaps the
+  // download of this module graph; use it once, and fall back to a normal request if it failed.
+  const early = custom ? null : globalThis.__siteFetch;
+  globalThis.__siteFetch = null;
+  let res = null;
+  if (early) { try { res = await early; } catch { res = null; } }
+  if (!res?.ok) res = await fetch(custom ?? new URL('../../content/site.json', import.meta.url).href, { cache: 'no-cache' });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
   return res.json();
 }
@@ -210,7 +216,7 @@ export async function boot({ content, preview } = {}) {
   if (!check.ok) console.warn(`site content has ${check.errors.length} problem(s):\n${check.errors.join('\n')}`);
   state.content = content;
   state.error = false;
-  applyTheme(content.theme);
+  applyTheme(content.theme, { persist: !state.preview && !sameOriginContentUrl() });
   renderAll();
   syncAmbient(content.theme);
 }
@@ -218,8 +224,8 @@ export async function boot({ content, preview } = {}) {
 // Hero scene and threads load after first paint; text is already on screen by now.
 function syncAmbient(theme) {
   try {
+    syncHero(document.querySelector('#hero > .hero-stage'), theme); // first: it starts the scene download
     syncThreads(theme);
-    syncHero(document.querySelector('#hero > .hero-stage'), theme);
   } catch (e) {
     console.warn(`ambient effects failed: ${e.message}`);
   }

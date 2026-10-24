@@ -19,7 +19,9 @@
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/assets/css/site.css">
+  <script>(function(){try{var j=JSON.parse(localStorage.getItem('site.themeVars'));if(!j||typeof j!=='object')return;var r=document.documentElement,l=j.mode==='light',v=j.vars||{},k;r.setAttribute('data-mode',l?'light':'dark');for(k in v)if(/^--(bg[12]|accent[123]|fg|muted|line|on-accent)$/.test(k)&&/^#[0-9a-f]{6}$/i.test(v[k]))r.style.setProperty(k,v[k]);if(l)r.style.setProperty('--card','rgba(255,255,255,.72)')}catch(e){}})();</script>
   <script type="importmap">{"imports":{"three":"/assets/vendor/three/three.module.js"}}</script>
+  <script>(function(){try{if(/[?&](preview|content|capture)=/.test(location.search))return;window.__siteFetch=fetch('/content/site.json',{cache:'no-cache'}).catch(function(){return null});if(matchMedia('(prefers-reduced-motion: reduce)').matches||document.documentElement.getAttribute('data-mode')==='light'||innerWidth<=480)return;['/assets/vendor/three/three.module.js','/assets/js/hero/interact.js','/assets/js/hero/desk.js'].forEach(function(h){var l=document.createElement('link');l.rel='modulepreload';l.href=h;document.head.appendChild(l)})}catch(e){}})();</script>
 </head>
 <body>
   <a class="skip-link" href="#main">Skip to content</a>

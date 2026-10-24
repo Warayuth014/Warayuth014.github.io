@@ -39,18 +39,19 @@ function setMode(stage, mode) {
   stage.classList.toggle('is-live', mode === 'live');
 }
 
-// Start right after the first paint (not after window load / idle), so the scene shows within ~2 s.
-function afterFirstPaint(fn) {
-  if (typeof requestAnimationFrame !== 'function') { setTimeout(fn, 100); return; }
-  requestAnimationFrame(() => setTimeout(fn, 100));
-}
+// Resolves once the frame that shows the text has been painted. Building the scene (shader compile) blocks
+// the main thread, so it waits for this, but nothing else: the module download starts immediately.
+const afterPaint = () => new Promise((done) => {
+  if (typeof requestAnimationFrame !== 'function') { setTimeout(done, 0); return; }
+  requestAnimationFrame(() => setTimeout(done, 0));
+});
 
 async function startLive(stage) {
   const token = ++hero.token;
   setMode(stage, 'loading');
   let mod;
   try {
-    mod = await import('./desk.js');
+    [mod] = await Promise.all([import('./desk.js'), afterPaint()]);
   } catch {
     if (token === hero.token) { setMode(stage, 'poster'); showPoster(stage); }
     return;
@@ -70,6 +71,7 @@ async function startLive(stage) {
       reducedMotion: false,
       capture,
       onFirstFrame(ms) {
+        stage.dataset.heroFirstFrame = String(Math.round(performance.now()));
         // chooseHeroMode owns the "too slow" rule; hand it the measured first frame.
         const mode = chooseHeroMode({ reducedMotion: false, webgl: true, width: Infinity, deviceMemory: 8, firstFrameMs: ms });
         if (mode === 'poster') queueMicrotask(toPoster);
@@ -114,10 +116,7 @@ export function syncHero(stage, theme) {
   hidePoster(stage);
   if (hero.desk) { hero.desk.setTheme(theme); return; }
   if (stage.dataset.heroMode === 'loading') return; // import in flight; it reads hero.theme when it mounts
-  setMode(stage, 'loading');
-  afterFirstPaint(() => {
-    if (hero.stage === stage && stage.dataset.heroMode === 'loading' && !hero.desk) startLive(stage);
-  });
+  startLive(stage);
 }
 
 // ---------- ambient threads ----------
