@@ -67,7 +67,7 @@ async function load() {
     const site = await res.json();
     state.site = site && typeof site === 'object' ? site : null;
     state.resume = site && typeof site.resume === 'object' && site.resume ? site.resume : { file: null, kind: null };
-    try { applyTheme(site?.theme); } catch { /* default theme */ }
+    try { applyTheme(site?.theme, { persist: !custom }); } catch { /* default theme */ }
   } catch {
     state.resume = null;
   }
