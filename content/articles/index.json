@@ -1,21 +1,5 @@
 [
   {
-    "slug": "editor-test-post",
-    "title": {
-      "th": "บทความทดสอบระบบ",
-      "en": "Editor test post"
-    },
-    "summary": {
-      "th": "ทดสอบเขียนบทความพร้อมรูปจากหน้า /edit",
-      "en": "Testing an article with an image from /edit"
-    },
-    "tags": [
-      "test"
-    ],
-    "cover": null,
-    "date": "2026-10-24"
-  },
-  {
     "slug": "welcome",
     "title": {
       "th": "ยินดีต้อนรับสู่โต๊ะทำงานของผม",
