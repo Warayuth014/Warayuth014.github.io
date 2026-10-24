@@ -140,12 +140,12 @@ function runPreload({ reduced = false, width = 1366, mode = null, search = '' })
   return { links, fetched: Boolean(ctx.__siteFetch) };
 }
 
-test('head script preloads the scene only when the device will likely go live', () => {
+test('head script preloads the scene whenever the page is not in light mode (reduced motion and width are ignored)', () => {
   for (const reduced of [false, true]) {
     for (const width of [390, 480, 481, 1366]) {
       for (const mode of [null, 'dark', 'light']) {
         const { links } = runPreload({ reduced, width, mode });
-        const want = !reduced && width > 480 && mode !== 'light';
+        const want = mode !== 'light';
         assert.equal(links.length > 0, want, `reduced=${reduced} width=${width} mode=${mode}`);
       }
     }
@@ -164,8 +164,8 @@ test('head script preloads the three modules, starts the early site.json fetch, 
   }
 });
 
-test('phones still start the early site.json fetch but download no 3D code', () => {
-  const { links, fetched } = runPreload({ width: 390 });
+test('light mode still starts the early site.json fetch but downloads no 3D code', () => {
+  const { links, fetched } = runPreload({ mode: 'light' });
   assert.equal(links.length, 0);
   assert.equal(fetched, true);
 });

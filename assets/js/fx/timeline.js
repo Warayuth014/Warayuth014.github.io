@@ -1,8 +1,7 @@
-// Fills the journey timeline line as the visitor scrolls. Static (fully drawn) under reduced motion.
-import { prefersReducedMotion, noop } from './env.js';
+// Fills the journey timeline line as the visitor scrolls.
+import { noop } from './env.js';
 
 export function enableTimelineProgress(root = document) {
-  if (prefersReducedMotion()) return noop;
   const lines = [...root.querySelectorAll('.timeline')];
   if (!lines.length) return noop;
 

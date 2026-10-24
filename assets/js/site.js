@@ -16,7 +16,7 @@ import { enableTilt } from './fx/tilt.js';
 import { enableReveal } from './fx/reveal.js';
 import { enableCursorGlow } from './fx/cursor-glow.js';
 import { enableTimelineProgress } from './fx/timeline.js';
-import { REDUCED_QUERY, COARSE_QUERY } from './fx/env.js';
+import { COARSE_QUERY } from './fx/env.js';
 import { syncProjectDialog } from './project-dialog.js';
 import { applyTheme } from './theme.js';
 
@@ -31,7 +31,6 @@ function setLang(lang) {
     try { localStorage.setItem('lang', state.lang); } catch { /* storage blocked */ }
   }
   renderAll();
-  if (state.content) syncAmbient(state.content.theme); // idempotent; relabels the hero 3D toggle
 }
 
 // ---------- 2D effects: one registry, disposed before every re-render ----------
@@ -56,7 +55,7 @@ function enableFx() {
 function watchFxPreferences() {
   if (fx.watching || typeof matchMedia !== 'function') return;
   fx.watching = true;
-  for (const q of [REDUCED_QUERY, COARSE_QUERY]) matchMedia(q).addEventListener?.('change', enableFx);
+  matchMedia(COARSE_QUERY).addEventListener?.('change', enableFx);
 }
 
 // ---------- rendering ----------

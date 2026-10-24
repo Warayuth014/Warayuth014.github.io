@@ -130,7 +130,6 @@ main { display: block; }
 .hero-stage.is-live .hero-canvas { opacity: 1; }
 .hero-poster { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; object-position: 60% 50%; max-width: none; }
 .threads { position: fixed; inset: 0; z-index: -1; width: 100%; height: 100%; pointer-events: none; opacity: 0.8; }
-@media (prefers-reduced-motion: reduce) { .hero-canvas { transition: none; } }
 @media (max-width: 719px) { .hero-poster, .hero-canvas { opacity: 0.5; } .hero-stage.is-live .hero-canvas { opacity: 0.5; } .hero-poster { object-position: 80% 50%; } }
 .hero-stage::after {
   content: ""; position: absolute; inset: 0;
@@ -140,15 +139,6 @@ main { display: block; }
     radial-gradient(34rem 26rem at 78% 30%, color-mix(in srgb, var(--accent3) 28%, transparent), transparent 65%),
     radial-gradient(30rem 24rem at 60% 70%, color-mix(in srgb, var(--accent1) 20%, transparent), transparent 65%);
 }
-.hero-toggle {
-  position: absolute; right: var(--gutter); top: 5rem; z-index: 2;
-  font: inherit; font-size: 0.8rem; color: var(--text); cursor: pointer;
-  padding: 0.45rem 0.9rem; border-radius: 999px;
-  background: color-mix(in srgb, var(--bg1) 70%, transparent);
-  border: 1px solid color-mix(in srgb, var(--accent1) 55%, transparent);
-  backdrop-filter: blur(6px);
-}
-.hero-toggle:hover { border-color: var(--accent1); color: var(--accent1); }
 .hero-grid { width: 100%; max-width: var(--maxw); margin: 0 auto; display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: end; gap: 2rem; }
 .hero-copy { max-width: 46rem; }
 /* Live desk: its monitor, keyboard and controller sit under the big title, so the text blocks let pointer
@@ -276,20 +266,18 @@ main { display: block; }
 .nf h1 { color: var(--accent1); }
 .nf h1:lang(th), .nf h1 [lang="th"] { line-height: 1.4; }
 
-/* motion only when the visitor has not asked for less */
-@media (prefers-reduced-motion: no-preference) {
-  .cursor { animation: blink 1.1s steps(1) infinite; }
-  @keyframes blink { 50% { opacity: 0; } }
-  .btn, .card, .social a, .lang-btn, .menu-btn, #primary-nav a { transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s, transform 0.25s ease-out; }
-  .card.is-tilting { transition: border-color 0.2s, box-shadow 0.2s, transform 0.05s linear; }
-  /* reveal: only elements JS marked as below the fold; opacity + translate, no layout change */
-  .rv { opacity: 0; translate: 0 22px; transition: opacity 0.6s ease-out, translate 0.6s ease-out; }
-  .rv.rv-in { opacity: 1; translate: 0 0; }
-  .cursor-glow { transition: opacity 0.3s; }
-  .chips li { transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s; }
-  .skill-row h3 { transition: color 0.2s, letter-spacing 0.2s; }
-  .timeline::after { transition: transform 0.15s linear; }
-}
+/* motion is always on, whatever the OS motion setting says */
+.cursor { animation: blink 1.1s steps(1) infinite; }
+@keyframes blink { 50% { opacity: 0; } }
+.btn, .card, .social a, .lang-btn, .menu-btn, #primary-nav a { transition: border-color 0.2s, box-shadow 0.2s, background-color 0.2s, color 0.2s, transform 0.25s ease-out; }
+.card.is-tilting { transition: border-color 0.2s, box-shadow 0.2s, transform 0.05s linear; }
+/* reveal: only elements JS marked as below the fold; opacity + translate, no layout change */
+.rv { opacity: 0; translate: 0 22px; transition: opacity 0.6s ease-out, translate 0.6s ease-out; }
+.rv.rv-in { opacity: 1; translate: 0 0; }
+.cursor-glow { transition: opacity 0.3s; }
+.chips li { transition: transform 0.2s, border-color 0.2s, background-color 0.2s, box-shadow 0.2s; }
+.skill-row h3 { transition: color 0.2s, letter-spacing 0.2s; }
+.timeline::after { transition: transform 0.15s linear; }
 @media print { .rv { opacity: 1 !important; translate: none !important; } .cursor-glow { display: none; } }
 
 /* cursor glow */
@@ -340,20 +328,15 @@ html:has(dialog.proj-dialog[open]) { overflow: hidden; }
 .proj-dialog .tags { margin: 1.2rem 0; }
 .proj-links { display: flex; flex-wrap: wrap; gap: 0.5rem 1.4rem; font-weight: 600; margin: 0; }
 .proj-private { font-size: 0.85rem; margin: 0; }
-@media (prefers-reduced-motion: no-preference) {
-  .proj-dialog[open] { animation: proj-in 0.22s ease-out; }
-  @keyframes proj-in { from { opacity: 0; transform: translateY(10px); } }
-}
+.proj-dialog[open] { animation: proj-in 0.22s ease-out; }
+@keyframes proj-in { from { opacity: 0; transform: translateY(10px); } }
 
 /* skills: playful hover (decorative; chips are not interactive, so nothing is hover-only information) */
 .chips li:hover { border-color: var(--accent2); transform: translateY(-2px) rotate(-1.5deg); background: color-mix(in srgb, var(--accent2) 14%, var(--card)); box-shadow: 0 6px 18px color-mix(in srgb, var(--accent2) 22%, transparent); }
 .chips li:nth-child(even):hover { transform: translateY(-2px) rotate(1.5deg); }
 .skill-row:hover h3 { color: var(--accent1); }
-@media (prefers-reduced-motion: reduce) {
-  .chips li:hover, .chips li:nth-child(even):hover { transform: none; }
-}
 
-/* journey: scroll-progress line (fully drawn when --p is never set: no JS or reduced motion) */
+/* journey: scroll-progress line (fully drawn when --p is never set: no JS) */
 .timeline::before { background: var(--line); }
 .timeline::after {
   content: ""; position: absolute; left: 0.3rem; top: 0.6rem; bottom: 0.6rem; width: 2px;

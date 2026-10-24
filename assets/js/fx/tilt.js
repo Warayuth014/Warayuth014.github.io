@@ -1,11 +1,11 @@
-// Card tilt that follows the mouse. Does nothing under reduced motion or on coarse pointers.
+// Card tilt that follows the mouse. Does nothing on coarse pointers (no hover).
 // Returns dispose(): removes listeners and clears the inline transform.
-import { prefersReducedMotion, coarsePointer, noop } from './env.js';
+import { coarsePointer, noop } from './env.js';
 
 const MAX_DEG = 5;
 
 export function enableTilt(root = document) {
-  if (prefersReducedMotion() || coarsePointer()) return noop;
+  if (coarsePointer()) return noop;
   const cards = [...root.querySelectorAll('.card')];
   const undo = [];
 
